@@ -8,6 +8,7 @@ type Cafe = {
   id: string
   name: string
   area: string | null
+  postcode: string | null
   visitorCounts?: Record<string, number>
   lastVisit?: string | null
 }
@@ -44,7 +45,6 @@ function AddVisitForm() {
   }, [])
 
   useEffect(() => {
-    // Pre-fill cafe from URL param
     const cafeName = searchParams.get('cafe')
     if (cafeName && cafes.length > 0) {
       const cafe = cafes.find((c) => c.name === cafeName)
@@ -71,7 +71,7 @@ function AddVisitForm() {
     }
 
     const fuse = new Fuse(cafes, {
-      keys: ['name', 'area'],
+      keys: ['name', 'area', 'postcode'],
       threshold: 0.3,
     })
 
@@ -147,7 +147,7 @@ function AddVisitForm() {
         setNotes('')
         fetchCafes()
 
-        setTimeout(() => setSuccess(false), 3000)
+        setTimeout(() => setSuccess(false), 5000)
       }
     } catch (error) {
       console.error('Error creating visit:', error)
@@ -156,218 +156,282 @@ function AddVisitForm() {
     }
   }
 
+  const avgRating = ((vibeRating + foodRating + coffeeRating + priceRating) / 4).toFixed(1)
+
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold text-amber-900 mb-6">Add Visit</h1>
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-4xl font-bold text-amber-900 mb-2">➕ Add Visit</h1>
+        <p className="text-gray-600">Log your latest café adventure</p>
+      </div>
 
       {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          Visit logged successfully!
+        <div className="bg-green-50 border-2 border-green-400 text-green-800 px-6 py-4 rounded-xl mb-6 flex items-center gap-3 animate-bounce">
+          <span className="text-3xl">✅</span>
+          <div>
+            <div className="font-bold text-lg">Visit logged successfully!</div>
+            <div className="text-sm">Your café conquest continues...</div>
+          </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-6 space-y-6">
-        {/* Cafe Search */}
-        <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Café *
-          </label>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onFocus={() => searchTerm && setShowSuggestions(true)}
-            placeholder="Search for a café..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-            required
-          />
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Café Search Card */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-amber-200">
+          <h2 className="text-xl font-bold text-amber-900 mb-4 flex items-center gap-2">
+            <span>☕</span>
+            <span>Select Café</span>
+          </h2>
 
-          {showSuggestions && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-              {filteredCafes.length > 0 ? (
-                filteredCafes.map((cafe) => (
-                  <button
-                    key={cafe.id}
-                    type="button"
-                    onClick={() => handleSelectCafe(cafe)}
-                    className="w-full px-4 py-2 text-left hover:bg-amber-50 border-b border-gray-100 last:border-b-0"
-                  >
-                    <div className="font-medium">{cafe.name}</div>
-                    <div className="text-sm text-gray-600">
-                      {cafe.area && `${cafe.area} • `}
+          <div className="relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => searchTerm && setShowSuggestions(true)}
+              placeholder="Search for a café..."
+              className="w-full px-5 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+              required
+            />
+
+            {showSuggestions && (
+              <div className="absolute z-10 w-full mt-2 bg-white border-2 border-amber-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto">
+                {filteredCafes.length > 0 ? (
+                  filteredCafes.map((cafe) => (
+                    <button
+                      key={cafe.id}
+                      type="button"
+                      onClick={() => handleSelectCafe(cafe)}
+                      className="w-full px-5 py-4 text-left hover:bg-amber-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                    >
+                      <div className="font-semibold text-amber-900">{cafe.name}</div>
+                      <div className="text-sm text-gray-600 flex items-center gap-2 mt-1">
+                        {cafe.area && <span>📍 {cafe.area}</span>}
+                        {cafe.postcode && <span className="font-mono">• {cafe.postcode}</span>}
+                      </div>
                       {cafe.visitorCounts &&
                         Object.keys(cafe.visitorCounts).length > 0 && (
-                          <span>
+                          <div className="text-sm text-amber-600 mt-1">
                             Visited by:{' '}
                             {Object.entries(cafe.visitorCounts)
-                              .map(([name, count]) => `${name} (${count})`)
+                              .map(([name, count]) => `${name} (${count}×)`)
                               .join(', ')}
-                          </span>
+                          </div>
                         )}
-                    </div>
-                  </button>
-                ))
-              ) : (
-                <div className="px-4 py-2">
-                  <div className="text-gray-600 mb-2">No cafés found</div>
-                  <button
-                    type="button"
-                    onClick={handleShowNewCafeForm}
-                    className="text-amber-600 hover:text-amber-700 font-medium"
-                  >
-                    + Add new café (no map pin yet)
-                  </button>
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-5 py-4">
+                    <div className="text-gray-600 mb-3">No cafés found</div>
+                    <button
+                      type="button"
+                      onClick={handleShowNewCafeForm}
+                      className="text-amber-600 hover:text-amber-700 font-semibold flex items-center gap-2"
+                    >
+                      <span className="text-xl">➕</span>
+                      <span>Add new café (no map pin yet)</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {showNewCafeForm && (
+            <div className="mt-4 bg-amber-50 p-5 rounded-xl border-2 border-amber-300">
+              <h3 className="font-bold text-amber-900 mb-3">Add New Café</h3>
+              <input
+                type="text"
+                value={newCafeName}
+                onChange={(e) => setNewCafeName(e.target.value)}
+                placeholder="Café name"
+                className="w-full px-4 py-3 border-2 border-amber-300 rounded-lg mb-3"
+              />
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleCreateNewCafe}
+                  className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-semibold transition-colors"
+                >
+                  Create
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNewCafeForm(false)}
+                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {selectedCafe && (
+            <div className="mt-4 bg-green-50 p-5 rounded-xl border-2 border-green-300">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl">✅</span>
+                <span className="font-bold text-green-900 text-lg">Selected:</span>
+              </div>
+              <div className="font-semibold text-green-900 text-xl">{selectedCafe.name}</div>
+              {selectedCafe.area && (
+                <div className="text-green-700 flex items-center gap-2 mt-1">
+                  <span>📍</span>
+                  <span>{selectedCafe.area}</span>
+                  {selectedCafe.postcode && <span className="font-mono">• {selectedCafe.postcode}</span>}
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* New Cafe Form */}
-        {showNewCafeForm && (
-          <div className="bg-amber-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Add New Café</h3>
-            <input
-              type="text"
-              value={newCafeName}
-              onChange={(e) => setNewCafeName(e.target.value)}
-              placeholder="Café name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-2"
-            />
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleCreateNewCafe}
-                className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700"
+        {/* Visitor & Date Card */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-amber-200">
+          <h2 className="text-xl font-bold text-amber-900 mb-4 flex items-center gap-2">
+            <span>👤</span>
+            <span>Visit Details</span>
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Who visited? *
+              </label>
+              <select
+                value={visitor}
+                onChange={(e) => setVisitor(e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-lg"
+                required
               >
-                Create
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowNewCafeForm(false)}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-              >
-                Cancel
-              </button>
+                <option value="">Select visitor</option>
+                {VISITORS.map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Visit Date
+              </label>
+              <input
+                type="date"
+                value={visitDate}
+                onChange={(e) => setVisitDate(e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+              />
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Selected Cafe Info */}
-        {selectedCafe && (
-          <div className="bg-green-50 p-4 rounded-lg">
-            <div className="font-semibold">Selected: {selectedCafe.name}</div>
-            {selectedCafe.area && (
-              <div className="text-sm text-gray-600">{selectedCafe.area}</div>
-            )}
+        {/* Ratings Card */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-amber-200">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-amber-900 flex items-center gap-2">
+              <span>⭐</span>
+              <span>Rate Your Experience</span>
+            </h2>
+            <div className="bg-amber-100 px-4 py-2 rounded-full">
+              <span className="text-sm font-semibold text-amber-700">Overall: </span>
+              <span className="text-2xl font-bold text-amber-900">{avgRating}</span>
+            </div>
           </div>
-        )}
 
-        {/* Visitor */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Who visited? *
-          </label>
-          <select
-            value={visitor}
-            onChange={(e) => setVisitor(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-            required
-          >
-            <option value="">Select visitor</option>
-            {VISITORS.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </select>
+          <div className="space-y-6">
+            <RatingInput
+              label="✨ Vibe"
+              description="Atmosphere, ambiance, and overall feel"
+              value={vibeRating}
+              onChange={setVibeRating}
+            />
+            <RatingInput
+              label="🍰 Food"
+              description="Quality and variety of food"
+              value={foodRating}
+              onChange={setFoodRating}
+            />
+            <RatingInput
+              label="☕ Coffee"
+              description="Coffee quality and preparation"
+              value={coffeeRating}
+              onChange={setCoffeeRating}
+            />
+            <RatingInput
+              label="💰 Value"
+              description="Price vs quality ratio"
+              value={priceRating}
+              onChange={setPriceRating}
+            />
+          </div>
         </div>
 
-        {/* Visit Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Visit Date
-          </label>
-          <input
-            type="date"
-            value={visitDate}
-            onChange={(e) => setVisitDate(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-          />
+        {/* Additional Details Card */}
+        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-amber-200">
+          <h2 className="text-xl font-bold text-amber-900 mb-4 flex items-center gap-2">
+            <span>📝</span>
+            <span>Additional Details</span>
+          </h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                🍰 Items Bought
+              </label>
+              <textarea
+                value={itemsBought}
+                onChange={(e) => setItemsBought(e.target.value)}
+                placeholder="e.g., Flat white, almond croissant, avocado toast"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                rows={2}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                💡 Recommendations
+              </label>
+              <textarea
+                value={recommendations}
+                onChange={(e) => setRecommendations(e.target.value)}
+                placeholder="What should others try? e.g., Try the blueberry muffin!"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                rows={2}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                📋 Notes
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Any other thoughts or observations?"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                rows={3}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Ratings */}
-        <div className="space-y-4">
-          <h3 className="font-semibold text-gray-700">Ratings (1-5)</h3>
-
-          <RatingInput
-            label="Vibe"
-            value={vibeRating}
-            onChange={setVibeRating}
-          />
-          <RatingInput
-            label="Food"
-            value={foodRating}
-            onChange={setFoodRating}
-          />
-          <RatingInput
-            label="Coffee"
-            value={coffeeRating}
-            onChange={setCoffeeRating}
-          />
-          <RatingInput
-            label="Price (value for money)"
-            value={priceRating}
-            onChange={setPriceRating}
-          />
-        </div>
-
-        {/* Optional fields */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Items Bought
-          </label>
-          <textarea
-            value={itemsBought}
-            onChange={(e) => setItemsBought(e.target.value)}
-            placeholder="e.g., Flat white, croissant"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-            rows={2}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Recommendations
-          </label>
-          <textarea
-            value={recommendations}
-            onChange={(e) => setRecommendations(e.target.value)}
-            placeholder="e.g., Try the blueberry muffin!"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-            rows={2}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Notes
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Any other thoughts?"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-            rows={3}
-          />
-        </div>
-
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={loading || !selectedCafe || !visitor}
-          className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+          className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold text-xl px-8 py-5 rounded-xl transition-all transform hover:scale-[1.02] disabled:transform-none shadow-lg disabled:shadow-none"
         >
-          {loading ? 'Saving...' : 'Save Visit'}
+          {loading ? (
+            <span className="flex items-center justify-center gap-3">
+              <span className="animate-spin text-2xl">⏳</span>
+              <span>Saving...</span>
+            </span>
+          ) : (
+            <span className="flex items-center justify-center gap-3">
+              <span className="text-2xl">🎉</span>
+              <span>Save Visit</span>
+            </span>
+          )}
         </button>
       </form>
     </div>
@@ -376,18 +440,28 @@ function AddVisitForm() {
 
 function RatingInput({
   label,
+  description,
   value,
   onChange,
 }: {
   label: string
+  description: string
   value: number
   onChange: (value: number) => void
 }) {
+  const emojis = ['😢', '😕', '😐', '😊', '🤩']
+
   return (
-    <div>
+    <div className="bg-amber-50 p-5 rounded-lg">
       <div className="flex items-center justify-between mb-2">
-        <label className="text-sm font-medium text-gray-700">{label}</label>
-        <span className="text-amber-600 font-semibold">{value}</span>
+        <div>
+          <label className="text-base font-bold text-amber-900">{label}</label>
+          <p className="text-xs text-gray-600 mt-1">{description}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-3xl">{emojis[value - 1]}</span>
+          <span className="text-3xl font-bold text-amber-600">{value}</span>
+        </div>
       </div>
       <input
         type="range"
@@ -395,9 +469,9 @@ function RatingInput({
         max="5"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
+        className="w-full h-3 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
       />
-      <div className="flex justify-between text-xs text-gray-500 mt-1">
+      <div className="flex justify-between text-xs text-gray-500 mt-2 px-1">
         <span>1</span>
         <span>2</span>
         <span>3</span>
