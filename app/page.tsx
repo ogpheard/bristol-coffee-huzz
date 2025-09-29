@@ -10,7 +10,7 @@ export default function Home() {
           Bristol Brew Baddies
         </h1>
         <p className="text-xl text-amber-50 mb-8 max-w-2xl mx-auto">
-          The ultimate café conquest! Track every visit, rate every brew, and compete with your crew across Bristol's finest coffee spots.
+          The ultimate café conquest! Track every visit, rate every brew, and compete with your crew across Bristol&apos;s finest coffee spots.
         </p>
         <Link
           href="/add-visit"
@@ -47,7 +47,7 @@ export default function Home() {
             <div className="text-5xl mb-4 transform group-hover:scale-110 transition-transform">🏆</div>
             <h3 className="text-2xl font-bold text-yellow-900 mb-3">Leaderboards</h3>
             <p className="text-gray-600">
-              Compare stats, track progress, and see who's the ultimate Bristol brew baddie!
+              Compare stats, track progress, and see who&apos;s the ultimate Bristol brew baddie!
             </p>
           </div>
         </Link>
