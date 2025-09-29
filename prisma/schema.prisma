@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Cafe {
+  id            String   @id @default(cuid())
+  name          String
+  area          String?
+  neighbourhood String?
+  postcode      String?
+  latitude      Float?
+  longitude     Float?
+  website       String?
+  source        String   @default("master") // "master" or "user_added"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  visits        Visit[]
+
+  @@index([source])
+  @@index([name])
+}
+
+model Visit {
+  id              String   @id @default(cuid())
+  cafeId          String
+  visitorName     String
+  visitDate       DateTime @default(now())
+
+  // Ratings (1-5)
+  vibeRating      Int
+  foodRating      Int
+  coffeeRating    Int
+  priceRating     Int
+
+  // Free text fields
+  itemsBought     String?  // comma-separated or line-separated
+  recommendations String?
+  notes           String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  cafe            Cafe     @relation(fields: [cafeId], references: [id], onDelete: Cascade)
+
+  @@index([cafeId])
+  @@index([visitorName])
+  @@index([visitDate])
+}
