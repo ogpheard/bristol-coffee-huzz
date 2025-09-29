@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Fuse from 'fuse.js'
 
@@ -14,7 +14,7 @@ type Cafe = {
 
 const VISITORS = ['Eleanor', 'Hannah', 'Anna']
 
-export default function AddVisitPage() {
+function AddVisitForm() {
   const searchParams = useSearchParams()
   const [cafes, setCafes] = useState<Cafe[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -405,5 +405,20 @@ function RatingInput({
         <span>5</span>
       </div>
     </div>
+  )
+}
+
+export default function AddVisitPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-amber-900 mb-6">Add Visit</h1>
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="text-center py-8 text-gray-600">Loading...</div>
+        </div>
+      </div>
+    }>
+      <AddVisitForm />
+    </Suspense>
   )
 }
