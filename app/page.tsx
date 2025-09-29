@@ -5,7 +5,7 @@ export default function Home() {
     <div className="max-w-4xl mx-auto">
       <div className="bg-white rounded-lg shadow-lg p-8 text-center">
         <h1 className="text-4xl font-bold text-amber-900 mb-4">
-          Welcome to Bristol Café Quest!
+          Welcome to Bristol Café Quest! ☕
         </h1>
         <p className="text-lg text-gray-600 mb-8">
           Track your journey through every café in Bristol. Log visits, rate cafés, and compete with your flatmates to see who can visit the most!
