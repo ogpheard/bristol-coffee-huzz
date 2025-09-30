@@ -47,6 +47,10 @@ model Visit {
   recommendations String?
   notes           String?
 
+  // Optional user-provided location
+  locationLat     Float?
+  locationLng     Float?
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

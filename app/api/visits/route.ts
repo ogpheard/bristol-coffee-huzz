@@ -36,6 +36,8 @@ export async function POST(request: Request) {
       itemsBought,
       recommendations,
       notes,
+      locationLat,
+      locationLng,
     } = body
 
     // Validate ratings
@@ -62,6 +64,8 @@ export async function POST(request: Request) {
         itemsBought,
         recommendations,
         notes,
+        locationLat: locationLat || null,
+        locationLng: locationLng || null,
       },
       include: {
         cafe: true,

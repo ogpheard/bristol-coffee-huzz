@@ -14,7 +14,6 @@ type Cafe = {
 }
 
 const VISITORS = ['Eleanor', 'Hannah', 'Anna']
-const RATING_EMOJIS = ['😢', '😕', '😐', '😊', '🤩']
 
 function AddVisitForm() {
   const searchParams = useSearchParams()
@@ -33,10 +32,18 @@ function AddVisitForm() {
   const [coffeeRating, setCoffeeRating] = useState(3)
   const [priceRating, setPriceRating] = useState(3)
   const [itemsBought, setItemsBought] = useState('')
+  const [itemsTags, setItemsTags] = useState<string[]>([])
+  const [itemsInput, setItemsInput] = useState('')
   const [recommendations, setRecommendations] = useState('')
+  const [recommendationsTags, setRecommendationsTags] = useState<string[]>([])
+  const [recommendationsInput, setRecommendationsInput] = useState('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [locationLat, setLocationLat] = useState<number | null>(null)
+  const [locationLng, setLocationLng] = useState<number | null>(null)
+  const [locationLoading, setLocationLoading] = useState(false)
+  const [locationError, setLocationError] = useState('')
 
   // New cafe form
   const [newCafeName, setNewCafeName] = useState('')
@@ -122,6 +129,52 @@ function AddVisitForm() {
     setNewCafePostcode('')
   }
 
+  const handleItemsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && itemsInput.trim()) {
+      e.preventDefault()
+      setItemsTags([...itemsTags, itemsInput.trim()])
+      setItemsInput('')
+    }
+  }
+
+  const removeItemsTag = (index: number) => {
+    setItemsTags(itemsTags.filter((_, i) => i !== index))
+  }
+
+  const handleRecommendationsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && recommendationsInput.trim()) {
+      e.preventDefault()
+      setRecommendationsTags([...recommendationsTags, recommendationsInput.trim()])
+      setRecommendationsInput('')
+    }
+  }
+
+  const removeRecommendationsTag = (index: number) => {
+    setRecommendationsTags(recommendationsTags.filter((_, i) => i !== index))
+  }
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser')
+      return
+    }
+
+    setLocationLoading(true)
+    setLocationError('')
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocationLat(position.coords.latitude)
+        setLocationLng(position.coords.longitude)
+        setLocationLoading(false)
+      },
+      (error) => {
+        setLocationError('Unable to retrieve your location')
+        setLocationLoading(false)
+      }
+    )
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedCafe || !visitor) return
@@ -129,6 +182,10 @@ function AddVisitForm() {
     setLoading(true)
 
     try {
+      // Combine tags into comma-separated strings
+      const itemsBoughtStr = itemsTags.length > 0 ? itemsTags.join(', ') : null
+      const recommendationsStr = recommendationsTags.length > 0 ? recommendationsTags.join(', ') : null
+
       const response = await fetch('/api/visits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -140,9 +197,11 @@ function AddVisitForm() {
           foodRating,
           coffeeRating,
           priceRating,
-          itemsBought: itemsBought || null,
-          recommendations: recommendations || null,
+          itemsBought: itemsBoughtStr,
+          recommendations: recommendationsStr,
           notes: notes || null,
+          locationLat,
+          locationLng,
         }),
       })
 
@@ -156,9 +215,14 @@ function AddVisitForm() {
         setFoodRating(3)
         setCoffeeRating(3)
         setPriceRating(3)
-        setItemsBought('')
-        setRecommendations('')
+        setItemsTags([])
+        setItemsInput('')
+        setRecommendationsTags([])
+        setRecommendationsInput('')
         setNotes('')
+        setLocationLat(null)
+        setLocationLng(null)
+        setLocationError('')
         fetchCafes()
 
         setTimeout(() => setSuccess(false), 5000)
@@ -208,48 +272,57 @@ function AddVisitForm() {
               required
             />
 
-            {showSuggestions && filteredCafes.length > 0 && (
+            {showSuggestions && searchTerm.trim() && (
               <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto">
-                {filteredCafes.map((cafe) => (
-                  <button
-                    key={cafe.id}
-                    type="button"
-                    onClick={() => handleSelectCafe(cafe)}
-                    className="w-full px-5 py-4 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
-                  >
-                    <div className="font-bold text-black">{cafe.name}</div>
-                    <div className="text-sm text-gray-600 font-semibold flex items-center gap-2 mt-1">
-                      {cafe.area && <span>📍 {cafe.area}</span>}
-                      {cafe.postcode && <span className="font-mono">• {cafe.postcode}</span>}
-                    </div>
-                    {cafe.visitorCounts &&
-                      Object.keys(cafe.visitorCounts).length > 0 && (
-                        <div className="text-sm text-gray-600 font-semibold mt-1">
-                          Visited by:{' '}
-                          {Object.entries(cafe.visitorCounts)
-                            .map(([name, count]) => `${name} (${count}×)`)
-                            .join(', ')}
+                {filteredCafes.length > 0 ? (
+                  <>
+                    {filteredCafes.map((cafe) => (
+                      <button
+                        key={cafe.id}
+                        type="button"
+                        onClick={() => handleSelectCafe(cafe)}
+                        className="w-full px-5 py-4 text-left hover:bg-gray-50 border-b border-gray-100 transition-colors"
+                      >
+                        <div className="font-bold text-black">{cafe.name}</div>
+                        <div className="text-sm text-gray-600 font-semibold flex items-center gap-2 mt-1">
+                          {cafe.area && <span>📍 {cafe.area}</span>}
+                          {cafe.postcode && <span className="font-mono">• {cafe.postcode}</span>}
                         </div>
-                      )}
+                        {cafe.visitorCounts &&
+                          Object.keys(cafe.visitorCounts).length > 0 && (
+                            <div className="text-sm text-gray-600 font-semibold mt-1">
+                              Visited by:{' '}
+                              {Object.entries(cafe.visitorCounts)
+                                .map(([name, count]) => `${name} (${count}×)`)
+                                .join(', ')}
+                            </div>
+                          )}
+                      </button>
+                    ))}
+                    {/* Add café button at bottom of results */}
+                    <button
+                      type="button"
+                      onClick={handleShowNewCafeForm}
+                      className="w-full px-5 py-4 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 font-bold text-black"
+                    >
+                      <span className="text-xl">➕</span>
+                      <span>Can&apos;t find your café? Add it here</span>
+                    </button>
+                  </>
+                ) : (
+                  // Show only the add café button when no results
+                  <button
+                    type="button"
+                    onClick={handleShowNewCafeForm}
+                    className="w-full px-5 py-4 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 font-bold text-black"
+                  >
+                    <span className="text-xl">➕</span>
+                    <span>Can&apos;t find your café? Add it here</span>
                   </button>
-                ))}
+                )}
               </div>
             )}
           </div>
-
-          {/* Can't find café button - shows when there are search results OR no results */}
-          {searchTerm.trim() && !selectedCafe && (
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={handleShowNewCafeForm}
-                className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-black font-bold rounded-lg transition-all border-2 border-gray-300 hover:border-black flex items-center justify-center gap-2"
-              >
-                <span className="text-xl">➕</span>
-                <span>Can&apos;t find your café? Add it here</span>
-              </button>
-            </div>
-          )}
 
           {/* New Café Form - expands inline */}
           {showNewCafeForm && (
@@ -343,24 +416,27 @@ function AddVisitForm() {
             <span>Visit Details</span>
           </h2>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-black mb-2">
+              <label className="block text-sm font-bold text-black mb-3">
                 Who visited? *
               </label>
-              <select
-                value={visitor}
-                onChange={(e) => setVisitor(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all text-lg font-semibold"
-                required
-              >
-                <option value="">Select visitor</option>
+              <div className="grid grid-cols-3 gap-3">
                 {VISITORS.map((v) => (
-                  <option key={v} value={v}>
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setVisitor(v)}
+                    className={`py-4 px-6 rounded-lg border-2 transition-all font-bold text-lg ${
+                      visitor === v
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-black border-gray-200 hover:border-black'
+                    }`}
+                  >
                     {v}
-                  </option>
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
 
             <div>
@@ -407,8 +483,7 @@ function AddVisitForm() {
                         : 'bg-white text-black border-gray-200 hover:border-black'
                     }`}
                   >
-                    <div className="text-2xl mb-1">{RATING_EMOJIS[rating - 1]}</div>
-                    <div>{rating}</div>
+                    <div className="text-2xl font-bold">{rating}</div>
                   </button>
                 ))}
               </div>
@@ -430,8 +505,7 @@ function AddVisitForm() {
                         : 'bg-white text-black border-gray-200 hover:border-black'
                     }`}
                   >
-                    <div className="text-2xl mb-1">{RATING_EMOJIS[rating - 1]}</div>
-                    <div>{rating}</div>
+                    <div className="text-2xl font-bold">{rating}</div>
                   </button>
                 ))}
               </div>
@@ -453,8 +527,7 @@ function AddVisitForm() {
                         : 'bg-white text-black border-gray-200 hover:border-black'
                     }`}
                   >
-                    <div className="text-2xl mb-1">{RATING_EMOJIS[rating - 1]}</div>
-                    <div>{rating}</div>
+                    <div className="text-2xl font-bold">{rating}</div>
                   </button>
                 ))}
               </div>
@@ -476,8 +549,7 @@ function AddVisitForm() {
                         : 'bg-white text-black border-gray-200 hover:border-black'
                     }`}
                   >
-                    <div className="text-2xl mb-1">{RATING_EMOJIS[rating - 1]}</div>
-                    <div>{rating}</div>
+                    <div className="text-2xl font-bold">{rating}</div>
                   </button>
                 ))}
               </div>
@@ -497,26 +569,70 @@ function AddVisitForm() {
               <label className="block text-sm font-bold text-black mb-2">
                 🍰 Items Bought
               </label>
-              <textarea
-                value={itemsBought}
-                onChange={(e) => setItemsBought(e.target.value)}
-                placeholder="e.g., Flat white, almond croissant, avocado toast"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
-                rows={2}
-              />
+              <div className="space-y-2">
+                {itemsTags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {itemsTags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="bg-gray-200 text-black rounded-full px-3 py-1 text-sm font-semibold flex items-center gap-2 hover:bg-gray-300 transition-colors"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeItemsTag(index)}
+                          className="text-gray-600 hover:text-black font-bold"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <input
+                  type="text"
+                  value={itemsInput}
+                  onChange={(e) => setItemsInput(e.target.value)}
+                  onKeyDown={handleItemsKeyDown}
+                  placeholder="Type an item and press Enter (e.g., Flat white)"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
+                />
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-bold text-black mb-2">
                 💡 Recommendations
               </label>
-              <textarea
-                value={recommendations}
-                onChange={(e) => setRecommendations(e.target.value)}
-                placeholder="What should others try? e.g., Try the blueberry muffin!"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
-                rows={2}
-              />
+              <div className="space-y-2">
+                {recommendationsTags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {recommendationsTags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="bg-gray-200 text-black rounded-full px-3 py-1 text-sm font-semibold flex items-center gap-2 hover:bg-gray-300 transition-colors"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeRecommendationsTag(index)}
+                          className="text-gray-600 hover:text-black font-bold"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <input
+                  type="text"
+                  value={recommendationsInput}
+                  onChange={(e) => setRecommendationsInput(e.target.value)}
+                  onKeyDown={handleRecommendationsKeyDown}
+                  placeholder="Type a recommendation and press Enter (e.g., Blueberry muffin)"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
+                />
+              </div>
             </div>
 
             <div>
@@ -530,6 +646,63 @@ function AddVisitForm() {
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
                 rows={3}
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-black mb-2">
+                📍 Add Location (Optional)
+              </label>
+              <p className="text-xs text-gray-600 font-semibold mb-3">
+                Pin your exact location for this visit
+              </p>
+
+              {!locationLat && !locationLng ? (
+                <button
+                  type="button"
+                  onClick={handleGetLocation}
+                  disabled={locationLoading}
+                  className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-bold transition-colors disabled:bg-gray-400 flex items-center gap-2"
+                >
+                  {locationLoading ? (
+                    <>
+                      <span className="animate-spin">⏳</span>
+                      <span>Getting location...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>📍</span>
+                      <span>Use My Current Location</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-green-900 mb-1">Location saved!</div>
+                      <div className="text-sm text-green-700 font-mono">
+                        Lat: {locationLat?.toFixed(6)}, Lng: {locationLng?.toFixed(6)}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLocationLat(null)
+                        setLocationLng(null)
+                      }}
+                      className="text-green-900 hover:text-green-700 font-bold text-2xl"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {locationError && (
+                <div className="mt-2 text-sm text-red-600 font-semibold">
+                  {locationError}
+                </div>
+              )}
             </div>
           </div>
         </div>

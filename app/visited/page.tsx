@@ -14,6 +14,8 @@ type Visit = {
   itemsBought: string | null
   recommendations: string | null
   notes: string | null
+  locationLat: number | null
+  locationLng: number | null
 }
 
 type Cafe = {
@@ -263,6 +265,76 @@ function RatingBadge({ label, rating }: { label: string; rating: number }) {
 }
 
 function CafeDetailModal({ cafe, onClose }: { cafe: Cafe; onClose: () => void }) {
+  const [editingVisit, setEditingVisit] = useState<Visit | null>(null)
+  const [deletingVisitId, setDeletingVisitId] = useState<string | null>(null)
+  const [editFormData, setEditFormData] = useState<Partial<Visit>>({})
+  const [saving, setSaving] = useState(false)
+
+  const handleEditClick = (visit: Visit) => {
+    setEditingVisit(visit)
+    setEditFormData({
+      vibeRating: visit.vibeRating,
+      foodRating: visit.foodRating,
+      coffeeRating: visit.coffeeRating,
+      priceRating: visit.priceRating,
+      itemsBought: visit.itemsBought,
+      recommendations: visit.recommendations,
+      notes: visit.notes,
+    })
+  }
+
+  const handleCancelEdit = () => {
+    setEditingVisit(null)
+    setEditFormData({})
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingVisit) return
+
+    setSaving(true)
+    try {
+      const response = await fetch(`/api/visits/${editingVisit.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editFormData),
+      })
+
+      if (response.ok) {
+        // Refresh the page to show updated data
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error('Error updating visit:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteClick = (visitId: string) => {
+    setDeletingVisitId(visitId)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deletingVisitId) return
+
+    try {
+      const response = await fetch(`/api/visits/${deletingVisitId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        // Refresh the page to show updated data
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error('Error deleting visit:', error)
+    }
+  }
+
+  const handleCancelDelete = () => {
+    setDeletingVisitId(null)
+  }
+
   return (
     <div
       className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -342,22 +414,157 @@ function CafeDetailModal({ cafe, onClose }: { cafe: Cafe; onClose: () => void })
             <div className="space-y-4">
               {cafe.visits.map((visit) => (
                 <div key={visit.id} className="bg-gray-50 rounded-lg p-4 border-l-4 border-black">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-gray-200 text-black px-3 py-1 rounded-full font-semibold">
-                        {visit.visitorName}
+                  {editingVisit?.id === visit.id ? (
+                    // Edit mode
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="font-bold text-black">Editing Visit</div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleSaveEdit}
+                            disabled={saving}
+                            className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-900 font-bold text-sm transition-colors disabled:bg-gray-400"
+                          >
+                            {saving ? 'Saving...' : 'Save'}
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="px-4 py-2 bg-white text-black border-2 border-gray-300 rounded-lg hover:border-black font-bold text-sm transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-600">
-                        {format(new Date(visit.visitDate), 'MMM d, yyyy')}
+
+                      {/* Ratings */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-black mb-1">Vibe</label>
+                          <select
+                            value={editFormData.vibeRating}
+                            onChange={(e) => setEditFormData({ ...editFormData, vibeRating: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg font-semibold"
+                          >
+                            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-black mb-1">Food</label>
+                          <select
+                            value={editFormData.foodRating}
+                            onChange={(e) => setEditFormData({ ...editFormData, foodRating: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg font-semibold"
+                          >
+                            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-black mb-1">Coffee</label>
+                          <select
+                            value={editFormData.coffeeRating}
+                            onChange={(e) => setEditFormData({ ...editFormData, coffeeRating: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg font-semibold"
+                          >
+                            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-black mb-1">Value</label>
+                          <select
+                            value={editFormData.priceRating}
+                            onChange={(e) => setEditFormData({ ...editFormData, priceRating: Number(e.target.value) })}
+                            className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg font-semibold"
+                          >
+                            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Text fields */}
+                      <div>
+                        <label className="block text-xs font-bold text-black mb-1">Items Bought</label>
+                        <input
+                          type="text"
+                          value={editFormData.itemsBought || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, itemsBought: e.target.value })}
+                          className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-black mb-1">Recommendations</label>
+                        <input
+                          type="text"
+                          value={editFormData.recommendations || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, recommendations: e.target.value })}
+                          className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-black mb-1">Notes</label>
+                        <textarea
+                          value={editFormData.notes || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
+                          className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg font-semibold"
+                          rows={2}
+                        />
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <span>⭐</span>
-                      <span className="font-bold">
-                        {((visit.vibeRating + visit.foodRating + visit.coffeeRating + visit.priceRating) / 4).toFixed(1)}
-                      </span>
+                  ) : deletingVisitId === visit.id ? (
+                    // Delete confirmation mode
+                    <div className="space-y-4">
+                      <div className="text-center py-4">
+                        <div className="text-4xl mb-2">⚠️</div>
+                        <div className="font-bold text-black mb-2">Delete this visit?</div>
+                        <div className="text-sm text-gray-600">This action cannot be undone.</div>
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={handleConfirmDelete}
+                          className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold transition-colors"
+                        >
+                          Delete
+                        </button>
+                        <button
+                          onClick={handleCancelDelete}
+                          className="flex-1 px-4 py-3 bg-white text-black border-2 border-gray-300 rounded-lg hover:border-black font-bold transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    // Normal view mode
+                    <>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-gray-200 text-black px-3 py-1 rounded-full font-semibold">
+                            {visit.visitorName}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {format(new Date(visit.visitDate), 'MMM d, yyyy')}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1">
+                            <span>⭐</span>
+                            <span className="font-bold">
+                              {((visit.vibeRating + visit.foodRating + visit.coffeeRating + visit.priceRating) / 4).toFixed(1)}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => handleEditClick(visit)}
+                            className="px-3 py-1 bg-black text-white rounded-lg hover:bg-gray-900 font-bold text-xs transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(visit.id)}
+                            className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold text-xs transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
 
                   <div className="grid grid-cols-4 gap-2 mb-3 text-sm">
                     <div>
@@ -392,11 +599,22 @@ function CafeDetailModal({ cafe, onClose }: { cafe: Cafe; onClose: () => void })
                     </div>
                   )}
 
-                  {visit.notes && (
-                    <div>
-                      <span className="font-semibold text-gray-700">📝 Notes: </span>
-                      <span className="text-gray-600">{visit.notes}</span>
-                    </div>
+                      {visit.notes && (
+                        <div>
+                          <span className="font-semibold text-gray-700">📝 Notes: </span>
+                          <span className="text-gray-600">{visit.notes}</span>
+                        </div>
+                      )}
+
+                      {visit.locationLat && visit.locationLng && (
+                        <div className="mt-2 text-sm">
+                          <span className="font-semibold text-gray-700">📍 Location: </span>
+                          <span className="text-gray-600 font-mono text-xs">
+                            {visit.locationLat.toFixed(6)}, {visit.locationLng.toFixed(6)}
+                          </span>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               ))}
