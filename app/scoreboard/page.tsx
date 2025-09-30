@@ -68,42 +68,42 @@ export default function ScoreboardPage() {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-4xl font-bold text-amber-900 mb-2">🏆 Scoreboard</h1>
+        <h1 className="text-4xl font-bold text-black mb-2">🏆 Scoreboard</h1>
         <p className="text-gray-600">Track your café conquest progress</p>
       </div>
 
       {/* Overview Cards */}
       <div className="grid md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-transform">
+        <div className="bg-black rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-transform">
           <div className="text-5xl font-bold mb-2">{stats.overview.totalCafes}</div>
-          <div className="text-amber-100 font-semibold">Total Cafés</div>
+          <div className="text-gray-300 font-semibold">Total Cafés</div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-transform">
+        <div className="bg-gray-900 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-transform">
           <div className="text-5xl font-bold mb-2">{stats.overview.totalVisited}</div>
-          <div className="text-green-100 font-semibold">Visited ✅</div>
+          <div className="text-gray-300 font-semibold">Visited ✅</div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-transform">
+        <div className="bg-gray-800 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-transform">
           <div className="text-5xl font-bold mb-2">{stats.overview.totalRemaining}</div>
-          <div className="text-blue-100 font-semibold">Remaining 📍</div>
+          <div className="text-gray-300 font-semibold">Remaining 📍</div>
         </div>
 
-        <div className="bg-gradient-to-br from-pink-500 to-rose-500 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-transform">
+        <div className="bg-gray-700 rounded-2xl shadow-xl p-6 text-white transform hover:scale-105 transition-transform">
           <div className="text-5xl font-bold mb-2">{stats.overview.percentComplete}%</div>
-          <div className="text-pink-100 font-semibold">Complete 🎉</div>
+          <div className="text-gray-200 font-semibold">Complete 🎉</div>
         </div>
       </div>
 
       {/* Progress Bar */}
       <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-        <h2 className="text-2xl font-bold text-amber-900 mb-4 flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-black mb-4 flex items-center gap-2">
           <span>📊</span>
           <span>Overall Progress</span>
         </h2>
         <div className="relative w-full bg-gray-200 rounded-full h-12 overflow-hidden">
           <div
-            className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 flex items-center justify-center font-bold text-white text-lg transition-all duration-1000 ease-out"
+            className="absolute inset-y-0 left-0 bg-black flex items-center justify-center font-bold text-white text-lg transition-all duration-1000 ease-out"
             style={{ width: `${stats.overview.percentComplete}%` }}
           >
             {parseFloat(stats.overview.percentComplete) > 10 && (
@@ -119,20 +119,20 @@ export default function ScoreboardPage() {
 
       {/* Leaderboard */}
       <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-        <h2 className="text-2xl font-bold text-amber-900 mb-6 flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-2">
           <span>👑</span>
           <span>Brew Baddie Leaderboard</span>
         </h2>
         <div className="space-y-4">
           {stats.leaderboard.map((person, index) => {
             const medals = ['🥇', '🥈', '🥉']
-            const colors = ['from-yellow-400 to-yellow-600', 'from-gray-300 to-gray-500', 'from-orange-400 to-orange-600']
-            const bgColors = ['bg-yellow-50', 'bg-gray-50', 'bg-orange-50']
+            const colors = ['bg-black', 'bg-gray-900', 'bg-gray-800']
+            const bgColors = ['bg-gray-50', 'bg-gray-50', 'bg-gray-50']
 
             return (
               <div
                 key={person.name}
-                className={`${bgColors[index] || 'bg-white'} border-2 ${index < 3 ? 'border-amber-300' : 'border-gray-200'} rounded-xl p-6 transform hover:scale-[1.02] transition-all`}
+                className={`${bgColors[index] || 'bg-white'} border-2 ${index < 3 ? 'border-black' : 'border-gray-200'} rounded-xl p-6 transform hover:scale-[1.02] transition-all`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
@@ -147,7 +147,7 @@ export default function ScoreboardPage() {
                       </div>
                     </div>
                   </div>
-                  <div className={`bg-gradient-to-r ${colors[index] || 'from-amber-400 to-amber-600'} text-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg`}>
+                  <div className={`${colors[index] || 'bg-black'} text-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg`}>
                     <div className="text-center">
                       <div className="text-3xl font-bold">{person.uniqueCafes}</div>
                       <div className="text-xs">cafés</div>
@@ -163,7 +163,7 @@ export default function ScoreboardPage() {
       {/* Top Cafes */}
       {stats.topCafes.length > 0 && (
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <h2 className="text-2xl font-bold text-amber-900 mb-4 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-black mb-4 flex items-center gap-2">
             <span>⭐</span>
             <span>Top Rated Cafés</span>
           </h2>
@@ -172,17 +172,17 @@ export default function ScoreboardPage() {
             {stats.topCafes.map((cafe, index) => (
               <div
                 key={cafe.id}
-                className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-5 hover:shadow-lg transition-all"
+                className="bg-gray-50 border-2 border-gray-200 rounded-xl p-5 hover:shadow-lg hover:border-black transition-all"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="text-2xl font-bold text-amber-600">#{index + 1}</div>
+                    <div className="text-2xl font-bold text-black">#{index + 1}</div>
                     <div>
                       <div className="font-bold text-lg text-gray-900">{cafe.name}</div>
                       {cafe.area && <div className="text-sm text-gray-600">📍 {cafe.area}</div>}
                     </div>
                   </div>
-                  <div className="bg-amber-500 text-white px-4 py-2 rounded-full font-bold text-xl shadow-md">
+                  <div className="bg-black text-white px-4 py-2 rounded-full font-bold text-xl shadow-md">
                     {cafe.avgRating.toFixed(1)}
                   </div>
                 </div>
@@ -197,7 +197,7 @@ export default function ScoreboardPage() {
 
       {/* Area Breakdown */}
       <div className="bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-2xl font-bold text-amber-900 mb-6 flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-2">
           <span>🗺️</span>
           <span>Progress by Area</span>
         </h2>
@@ -213,13 +213,13 @@ export default function ScoreboardPage() {
                     <span className="text-gray-500"> {area.total} total</span>
                   </div>
                 </div>
-                <div className="text-2xl font-bold text-amber-600 min-w-[80px] text-right">
+                <div className="text-2xl font-bold text-black min-w-[80px] text-right">
                   {area.percentComplete}%
                 </div>
               </div>
               <div className="relative w-full bg-gray-200 rounded-full h-6 overflow-hidden">
                 <div
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-500 ease-out group-hover:from-amber-600 group-hover:to-orange-600"
+                  className="absolute inset-y-0 left-0 bg-black rounded-full transition-all duration-500 ease-out group-hover:bg-gray-900"
                   style={{ width: `${area.percentComplete}%` }}
                 />
                 {area.percentComplete > 15 && (
@@ -236,10 +236,10 @@ export default function ScoreboardPage() {
       </div>
 
       {/* Motivational Footer */}
-      <div className="mt-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl shadow-xl p-8 text-center text-white">
+      <div className="mt-8 bg-gray-900 rounded-2xl shadow-xl p-8 text-center text-white">
         <div className="text-4xl mb-3">💪</div>
         <div className="text-2xl font-bold mb-2">Keep Going, Brew Baddies!</div>
-        <div className="text-lg text-purple-100">
+        <div className="text-lg text-gray-300">
           {stats.overview.totalRemaining} more cafés to conquer!
         </div>
       </div>

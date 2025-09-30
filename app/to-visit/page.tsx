@@ -78,12 +78,12 @@ export default function ToVisitPage() {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-4xl font-bold text-amber-900 mb-2">📍 To Visit</h1>
+        <h1 className="text-4xl font-bold text-black mb-2">📍 To Visit</h1>
         <p className="text-gray-600">Your next café adventures await!</p>
       </div>
 
       {/* Summary Card */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg p-8 mb-6 text-white text-center">
+      <div className="bg-black rounded-xl shadow-lg p-8 mb-6 text-white text-center">
         <div className="text-6xl font-bold mb-2">{cafes.length}</div>
         <div className="text-xl">cafés waiting to be conquered!</div>
       </div>
@@ -151,9 +151,9 @@ export default function ToVisitPage() {
         {filteredCafes.map((cafe) => (
           <div
             key={cafe.id}
-            className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 p-6 border-2 border-transparent hover:border-blue-400"
+            className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 p-6 border-2 border-gray-200 hover:border-black"
           >
-            <h3 className="font-bold text-xl text-amber-900 mb-3">
+            <h3 className="font-bold text-xl text-black mb-3">
               {cafe.name}
             </h3>
 
@@ -188,7 +188,7 @@ export default function ToVisitPage() {
 
             <Link
               href={`/add-visit?cafe=${encodeURIComponent(cafe.name)}`}
-              className="block w-full text-center bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-semibold px-4 py-3 rounded-lg transition-all transform hover:scale-105"
+              className="block w-full text-center bg-black hover:bg-gray-900 text-white font-semibold px-4 py-3 rounded-lg transition-all transform hover:scale-105"
             >
               ➕ Mark Visited
             </Link>

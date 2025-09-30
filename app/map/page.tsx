@@ -133,7 +133,7 @@ export default function MapPage() {
         badge.style.position = 'absolute'
         badge.style.top = '-10px'
         badge.style.right = '-10px'
-        badge.style.backgroundColor = '#f59e0b'
+        badge.style.backgroundColor = '#000000'
         badge.style.color = 'white'
         badge.style.fontSize = '11px'
         badge.style.padding = '3px 6px'
@@ -143,19 +143,58 @@ export default function MapPage() {
         el.appendChild(badge)
       }
 
-      // Hover effect
+      // Create popup with café name and rating
+      const popupContent = `
+        <div style="padding: 8px; min-width: 150px;">
+          <div style="font-weight: bold; font-size: 14px; margin-bottom: 4px; color: #1f2937;">
+            ${cafe.name}
+          </div>
+          ${cafe.totalVisits > 0 ? `
+            <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6b7280;">
+              <span>⭐</span>
+              <span style="font-weight: 600;">${cafe.avgRating.toFixed(1)}</span>
+              <span>•</span>
+              <span>${cafe.totalVisits} ${cafe.totalVisits === 1 ? 'visit' : 'visits'}</span>
+            </div>
+          ` : `
+            <div style="font-size: 12px; color: #9ca3af;">Not visited yet</div>
+          `}
+          ${cafe.area ? `
+            <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">
+              📍 ${cafe.area}
+            </div>
+          ` : ''}
+        </div>
+      `
+
+      const popup = new mapboxgl.Popup({
+        offset: 25,
+        closeButton: false,
+        closeOnClick: false,
+        maxWidth: '300px'
+      }).setHTML(popupContent)
+
+      const marker = new mapboxgl.Marker(el)
+        .setLngLat([cafe.longitude, cafe.latitude])
+        .setPopup(popup)
+        .addTo(map.current!)
+
+      // Hover effect and popup toggle
       el.addEventListener('mouseenter', () => {
         el.style.transform = 'scale(1.2)'
         el.style.boxShadow = '0 6px 12px rgba(0,0,0,0.4)'
         el.style.zIndex = '1000'
+        marker.togglePopup()
       })
 
       el.addEventListener('mouseleave', () => {
         el.style.transform = 'scale(1)'
         el.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)'
         el.style.zIndex = 'auto'
+        marker.togglePopup()
       })
 
+      // Click to select cafe and fly to location
       el.addEventListener('click', () => {
         setSelectedCafe(cafe)
         map.current?.flyTo({
@@ -164,10 +203,6 @@ export default function MapPage() {
           duration: 1000,
         })
       })
-
-      const marker = new mapboxgl.Marker(el)
-        .setLngLat([cafe.longitude, cafe.latitude])
-        .addTo(map.current!)
 
       markers.current.push(marker)
     })
@@ -213,7 +248,7 @@ export default function MapPage() {
     <div className="h-[calc(100vh-180px)] flex flex-col">
       {/* Header */}
       <div className="mb-4">
-        <h1 className="text-4xl font-bold text-amber-900 mb-2">🗺️ Map</h1>
+        <h1 className="text-4xl font-bold text-black mb-2">🗺️ Map</h1>
         <p className="text-gray-600">Explore all {cafes.length} Bristol cafés</p>
       </div>
 
@@ -229,7 +264,7 @@ export default function MapPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search cafés, areas, postcodes..."
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
             />
           </div>
 
@@ -240,7 +275,7 @@ export default function MapPage() {
             <select
               value={filterVisited}
               onChange={(e) => setFilterVisited(e.target.value as 'all' | 'visited' | 'unvisited')}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
             >
               <option value="all">All cafés ({cafes.length})</option>
               <option value="visited">Visited ({cafes.filter(c => c.totalVisits > 0).length})</option>
@@ -291,14 +326,14 @@ export default function MapPage() {
         {selectedCafe && (
           <div className="w-96 bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
             {/* Header */}
-            <div className="bg-gradient-to-r from-amber-600 to-orange-600 p-6">
+            <div className="bg-black p-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold text-white mb-2">
                     {selectedCafe.name}
                   </h2>
                   {selectedCafe.area && (
-                    <p className="text-amber-100 flex items-center gap-2">
+                    <p className="text-gray-300 flex items-center gap-2">
                       <span>📍</span>
                       <span>{selectedCafe.area}</span>
                       {selectedCafe.postcode && <span className="font-mono">• {selectedCafe.postcode}</span>}
@@ -307,7 +342,7 @@ export default function MapPage() {
                 </div>
                 <button
                   onClick={() => setSelectedCafe(null)}
-                  className="text-white hover:text-amber-200 text-3xl font-bold transition-colors ml-2"
+                  className="text-white hover:text-gray-300 text-3xl font-bold transition-colors ml-2"
                 >
                   ×
                 </button>
@@ -319,8 +354,8 @@ export default function MapPage() {
               {selectedCafe.totalVisits > 0 ? (
                 <>
                   {/* Overall Rating */}
-                  <div className="bg-amber-50 rounded-xl p-6 mb-6 text-center">
-                    <div className="text-5xl font-bold text-amber-900 mb-2">
+                  <div className="bg-gray-50 rounded-xl p-6 mb-6 text-center">
+                    <div className="text-5xl font-bold text-black mb-2">
                       {selectedCafe.avgRating.toFixed(1)}
                     </div>
                     <div className="text-gray-600 mb-4 flex items-center justify-center gap-1">
@@ -349,9 +384,9 @@ export default function MapPage() {
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {Object.entries(selectedCafe.visitorCounts).map(([name, count]) => (
-                        <div key={name} className="bg-amber-100 px-3 py-2 rounded-lg">
-                          <span className="font-semibold text-amber-900">{name}</span>
-                          <span className="text-amber-700"> × {count}</span>
+                        <div key={name} className="bg-gray-100 px-3 py-2 rounded-lg">
+                          <span className="font-semibold text-black">{name}</span>
+                          <span className="text-gray-700"> × {count}</span>
                         </div>
                       ))}
                     </div>
@@ -368,7 +403,7 @@ export default function MapPage() {
                   {/* Action Button */}
                   <Link
                     href={`/add-visit?cafe=${encodeURIComponent(selectedCafe.name)}`}
-                    className="block w-full text-center bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-semibold px-6 py-3 rounded-lg transition-all transform hover:scale-105 mt-6"
+                    className="block w-full text-center bg-black hover:bg-gray-900 text-white font-semibold px-6 py-3 rounded-lg transition-all transform hover:scale-105 mt-6"
                   >
                     ➕ Add Visit
                   </Link>
@@ -383,7 +418,7 @@ export default function MapPage() {
 
                   <Link
                     href={`/add-visit?cafe=${encodeURIComponent(selectedCafe.name)}`}
-                    className="block w-full text-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 py-3 rounded-lg transition-all transform hover:scale-105"
+                    className="block w-full text-center bg-black hover:bg-gray-900 text-white font-semibold px-6 py-3 rounded-lg transition-all transform hover:scale-105"
                   >
                     ➕ Mark as Visited
                   </Link>
@@ -410,11 +445,11 @@ function RatingBar({ label, rating }: { label: string; rating: number }) {
     <div>
       <div className="flex justify-between text-sm mb-2">
         <span className="font-semibold text-gray-700">{label}</span>
-        <span className="font-bold text-amber-900">{rating.toFixed(1)}</span>
+        <span className="font-bold text-black">{rating.toFixed(1)}</span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-3">
         <div
-          className="bg-gradient-to-r from-amber-500 to-orange-500 h-3 rounded-full transition-all duration-500"
+          className="bg-black h-3 rounded-full transition-all duration-500"
           style={{ width: `${(rating / 5) * 100}%` }}
         />
       </div>

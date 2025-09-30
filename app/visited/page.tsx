@@ -116,7 +116,7 @@ export default function VisitedPage() {
   return (
     <div className="max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-4xl font-bold text-amber-900">✅ Visited Cafés</h1>
+        <h1 className="text-4xl font-bold text-black">✅ Visited Cafés</h1>
         <div className="text-lg font-semibold text-gray-600">
           {filteredCafes.length} {filteredCafes.length === 1 ? 'café' : 'cafés'}
         </div>
@@ -181,15 +181,15 @@ export default function VisitedPage() {
           <div
             key={cafe.id}
             onClick={() => setSelectedCafe(cafe)}
-            className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 cursor-pointer border-2 border-transparent hover:border-amber-400 p-6"
+            className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 cursor-pointer border-2 border-gray-200 hover:border-black p-6"
           >
             <div className="flex items-start justify-between mb-3">
-              <h3 className="text-xl font-bold text-amber-900 flex-1">
+              <h3 className="text-xl font-bold text-black flex-1">
                 {cafe.name}
               </h3>
-              <div className="flex items-center gap-1 bg-amber-100 px-3 py-1 rounded-full">
+              <div className="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full">
                 <span className="text-lg">⭐</span>
-                <span className="font-bold text-amber-900">
+                <span className="font-bold text-black">
                   {cafe.avgRating.toFixed(1)}
                 </span>
               </div>
@@ -226,7 +226,7 @@ export default function VisitedPage() {
                 {Object.entries(cafe.visitorCounts).map(([name, count]) => (
                   <div
                     key={name}
-                    className="bg-amber-200 text-amber-900 px-2 py-1 rounded-full text-xs font-semibold"
+                    className="bg-gray-200 text-black px-2 py-1 rounded-full text-xs font-semibold"
                     title={`${name}: ${count} visits`}
                   >
                     {name[0]} {count}
@@ -257,7 +257,7 @@ function RatingBadge({ label, rating }: { label: string; rating: number }) {
   return (
     <div className="text-center">
       <div className="text-xs text-gray-500 mb-1">{label}</div>
-      <div className="font-bold text-amber-900">{rating.toFixed(1)}</div>
+      <div className="font-bold text-black">{rating.toFixed(1)}</div>
     </div>
   )
 }
@@ -273,12 +273,12 @@ function CafeDetailModal({ cafe, onClose }: { cafe: Cafe; onClose: () => void })
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-amber-600 to-orange-600 p-8 rounded-t-2xl">
+        <div className="bg-black p-8 rounded-t-2xl">
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-3xl font-bold text-white mb-2">{cafe.name}</h2>
               {cafe.area && (
-                <p className="text-amber-100 flex items-center gap-2">
+                <p className="text-gray-300 flex items-center gap-2">
                   <span>📍</span>
                   <span>{cafe.area}</span>
                   {cafe.postcode && <span className="font-mono">• {cafe.postcode}</span>}
@@ -287,7 +287,7 @@ function CafeDetailModal({ cafe, onClose }: { cafe: Cafe; onClose: () => void })
             </div>
             <button
               onClick={onClose}
-              className="text-white hover:text-amber-200 text-3xl font-bold transition-colors"
+              className="text-white hover:text-gray-300 text-3xl font-bold transition-colors"
             >
               ×
             </button>
@@ -296,26 +296,26 @@ function CafeDetailModal({ cafe, onClose }: { cafe: Cafe; onClose: () => void })
 
         <div className="p-8">
           {/* Overall Rating */}
-          <div className="bg-amber-50 rounded-xl p-6 mb-6 text-center">
-            <div className="text-6xl font-bold text-amber-900 mb-2">
+          <div className="bg-gray-50 rounded-xl p-6 mb-6 text-center">
+            <div className="text-6xl font-bold text-black mb-2">
               {cafe.avgRating.toFixed(1)}
             </div>
             <div className="text-gray-600 mb-4">Overall Rating</div>
             <div className="grid grid-cols-4 gap-4">
               <div>
-                <div className="text-2xl font-bold text-amber-900">{cafe.avgVibe.toFixed(1)}</div>
+                <div className="text-2xl font-bold text-black">{cafe.avgVibe.toFixed(1)}</div>
                 <div className="text-sm text-gray-600">Vibe</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-amber-900">{cafe.avgFood.toFixed(1)}</div>
+                <div className="text-2xl font-bold text-black">{cafe.avgFood.toFixed(1)}</div>
                 <div className="text-sm text-gray-600">Food</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-amber-900">{cafe.avgCoffee.toFixed(1)}</div>
+                <div className="text-2xl font-bold text-black">{cafe.avgCoffee.toFixed(1)}</div>
                 <div className="text-sm text-gray-600">Coffee</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-amber-900">{cafe.avgPrice.toFixed(1)}</div>
+                <div className="text-2xl font-bold text-black">{cafe.avgPrice.toFixed(1)}</div>
                 <div className="text-sm text-gray-600">Value</div>
               </div>
             </div>
@@ -326,9 +326,9 @@ function CafeDetailModal({ cafe, onClose }: { cafe: Cafe; onClose: () => void })
             <h3 className="text-xl font-bold text-gray-900 mb-3">👥 Visitors</h3>
             <div className="flex flex-wrap gap-3">
               {Object.entries(cafe.visitorCounts).map(([name, count]) => (
-                <div key={name} className="bg-amber-100 px-4 py-2 rounded-lg">
-                  <span className="font-semibold text-amber-900">{name}</span>
-                  <span className="text-amber-700"> visited {count}×</span>
+                <div key={name} className="bg-gray-100 px-4 py-2 rounded-lg">
+                  <span className="font-semibold text-black">{name}</span>
+                  <span className="text-gray-700"> visited {count}×</span>
                 </div>
               ))}
             </div>
@@ -341,10 +341,10 @@ function CafeDetailModal({ cafe, onClose }: { cafe: Cafe; onClose: () => void })
             </h3>
             <div className="space-y-4">
               {cafe.visits.map((visit) => (
-                <div key={visit.id} className="bg-gray-50 rounded-lg p-4 border-l-4 border-amber-500">
+                <div key={visit.id} className="bg-gray-50 rounded-lg p-4 border-l-4 border-black">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="bg-amber-200 text-amber-900 px-3 py-1 rounded-full font-semibold">
+                      <div className="bg-gray-200 text-black px-3 py-1 rounded-full font-semibold">
                         {visit.visitorName}
                       </div>
                       <div className="text-sm text-gray-600">

@@ -161,7 +161,7 @@ function AddVisitForm() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-4xl font-bold text-amber-900 mb-2">➕ Add Visit</h1>
+        <h1 className="text-4xl font-bold text-black mb-2">➕ Add Visit</h1>
         <p className="text-gray-600">Log your latest café adventure</p>
       </div>
 
@@ -177,8 +177,8 @@ function AddVisitForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Café Search Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-amber-200">
-          <h2 className="text-xl font-bold text-amber-900 mb-4 flex items-center gap-2">
+        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
+          <h2 className="text-xl font-bold text-black mb-4 flex items-center gap-2">
             <span>☕</span>
             <span>Select Café</span>
           </h2>
@@ -190,28 +190,28 @@ function AddVisitForm() {
               onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={() => searchTerm && setShowSuggestions(true)}
               placeholder="Search for a café..."
-              className="w-full px-5 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+              className="w-full px-5 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all"
               required
             />
 
             {showSuggestions && (
-              <div className="absolute z-10 w-full mt-2 bg-white border-2 border-amber-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto">
                 {filteredCafes.length > 0 ? (
                   filteredCafes.map((cafe) => (
                     <button
                       key={cafe.id}
                       type="button"
                       onClick={() => handleSelectCafe(cafe)}
-                      className="w-full px-5 py-4 text-left hover:bg-amber-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                      className="w-full px-5 py-4 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                     >
-                      <div className="font-semibold text-amber-900">{cafe.name}</div>
+                      <div className="font-semibold text-black">{cafe.name}</div>
                       <div className="text-sm text-gray-600 flex items-center gap-2 mt-1">
                         {cafe.area && <span>📍 {cafe.area}</span>}
                         {cafe.postcode && <span className="font-mono">• {cafe.postcode}</span>}
                       </div>
                       {cafe.visitorCounts &&
                         Object.keys(cafe.visitorCounts).length > 0 && (
-                          <div className="text-sm text-amber-600 mt-1">
+                          <div className="text-sm text-gray-600 mt-1">
                             Visited by:{' '}
                             {Object.entries(cafe.visitorCounts)
                               .map(([name, count]) => `${name} (${count}×)`)
@@ -226,7 +226,7 @@ function AddVisitForm() {
                     <button
                       type="button"
                       onClick={handleShowNewCafeForm}
-                      className="text-amber-600 hover:text-amber-700 font-semibold flex items-center gap-2"
+                      className="text-black hover:text-gray-700 font-semibold flex items-center gap-2"
                     >
                       <span className="text-xl">➕</span>
                       <span>Add new café (no map pin yet)</span>
@@ -238,27 +238,27 @@ function AddVisitForm() {
           </div>
 
           {showNewCafeForm && (
-            <div className="mt-4 bg-amber-50 p-5 rounded-xl border-2 border-amber-300">
-              <h3 className="font-bold text-amber-900 mb-3">Add New Café</h3>
+            <div className="mt-4 bg-gray-50 p-5 rounded-xl border-2 border-gray-300">
+              <h3 className="font-bold text-black mb-3">Add New Café</h3>
               <input
                 type="text"
                 value={newCafeName}
                 onChange={(e) => setNewCafeName(e.target.value)}
                 placeholder="Café name"
-                className="w-full px-4 py-3 border-2 border-amber-300 rounded-lg mb-3"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg mb-3"
               />
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={handleCreateNewCafe}
-                  className="px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-semibold transition-colors"
+                  className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-semibold transition-colors"
                 >
                   Create
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowNewCafeForm(false)}
-                  className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition-colors"
+                  className="px-6 py-3 bg-white text-black border border-gray-200 rounded-lg hover:border-black font-semibold transition-colors"
                 >
                   Cancel
                 </button>
@@ -285,8 +285,8 @@ function AddVisitForm() {
         </div>
 
         {/* Visitor & Date Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-amber-200">
-          <h2 className="text-xl font-bold text-amber-900 mb-4 flex items-center gap-2">
+        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
+          <h2 className="text-xl font-bold text-black mb-4 flex items-center gap-2">
             <span>👤</span>
             <span>Visit Details</span>
           </h2>
@@ -299,7 +299,7 @@ function AddVisitForm() {
               <select
                 value={visitor}
                 onChange={(e) => setVisitor(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-lg"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all text-lg"
                 required
               >
                 <option value="">Select visitor</option>
@@ -326,15 +326,15 @@ function AddVisitForm() {
         </div>
 
         {/* Ratings Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-amber-200">
+        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-amber-900 flex items-center gap-2">
+            <h2 className="text-xl font-bold text-black flex items-center gap-2">
               <span>⭐</span>
               <span>Rate Your Experience</span>
             </h2>
-            <div className="bg-amber-100 px-4 py-2 rounded-full">
-              <span className="text-sm font-semibold text-amber-700">Overall: </span>
-              <span className="text-2xl font-bold text-amber-900">{avgRating}</span>
+            <div className="bg-gray-100 px-4 py-2 rounded-full">
+              <span className="text-sm font-semibold text-gray-700">Overall: </span>
+              <span className="text-2xl font-bold text-black">{avgRating}</span>
             </div>
           </div>
 
@@ -367,8 +367,8 @@ function AddVisitForm() {
         </div>
 
         {/* Additional Details Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-amber-200">
-          <h2 className="text-xl font-bold text-amber-900 mb-4 flex items-center gap-2">
+        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
+          <h2 className="text-xl font-bold text-black mb-4 flex items-center gap-2">
             <span>📝</span>
             <span>Additional Details</span>
           </h2>
@@ -419,7 +419,7 @@ function AddVisitForm() {
         <button
           type="submit"
           disabled={loading || !selectedCafe || !visitor}
-          className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold text-xl px-8 py-5 rounded-xl transition-all transform hover:scale-[1.02] disabled:transform-none shadow-lg disabled:shadow-none"
+          className="w-full bg-black hover:bg-gray-900 disabled:bg-gray-400 text-white font-bold text-xl px-8 py-5 rounded-xl transition-all transform hover:scale-[1.02] disabled:transform-none shadow-lg disabled:shadow-none"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-3">
@@ -452,15 +452,15 @@ function RatingInput({
   const emojis = ['😢', '😕', '😐', '😊', '🤩']
 
   return (
-    <div className="bg-amber-50 p-5 rounded-lg">
+    <div className="bg-gray-50 p-5 rounded-lg">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <label className="text-base font-bold text-amber-900">{label}</label>
+          <label className="text-base font-bold text-black">{label}</label>
           <p className="text-xs text-gray-600 mt-1">{description}</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-3xl">{emojis[value - 1]}</span>
-          <span className="text-3xl font-bold text-amber-600">{value}</span>
+          <span className="text-3xl font-bold text-black">{value}</span>
         </div>
       </div>
       <input
@@ -469,7 +469,7 @@ function RatingInput({
         max="5"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-3 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
+        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
       />
       <div className="flex justify-between text-xs text-gray-500 mt-2 px-1">
         <span>1</span>
@@ -486,7 +486,7 @@ export default function AddVisitPage() {
   return (
     <Suspense fallback={
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-amber-900 mb-6">Add Visit</h1>
+        <h1 className="text-3xl font-bold text-black mb-6">Add Visit</h1>
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="text-center py-8 text-gray-600">Loading...</div>
         </div>
