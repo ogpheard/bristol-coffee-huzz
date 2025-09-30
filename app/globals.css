@@ -34,14 +34,33 @@ h1, h2, h3, h4, h5, h6 {
 
 label {
   font-weight: 600;
+  font-family: var(--font-fredoka);
 }
 
 button {
   font-weight: 600;
+  font-family: var(--font-fredoka);
+}
+
+/* Apply Fredoka to more elements for a fun aesthetic */
+.card-title {
+  font-family: var(--font-fredoka);
 }
 
 /* Make placeholder text darker and more visible */
 ::placeholder {
   color: #6b7280;
   opacity: 1;
+}
+
+/* Make typed text in inputs darker and bolder */
+input, textarea, select {
+  color: #000000;
+  font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+  input, textarea, select {
+    color: #ffffff;
+  }
 }

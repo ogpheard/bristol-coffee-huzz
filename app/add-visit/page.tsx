@@ -49,6 +49,10 @@ function AddVisitForm() {
   const [newCafeName, setNewCafeName] = useState('')
   const [newCafeArea, setNewCafeArea] = useState('')
   const [newCafePostcode, setNewCafePostcode] = useState('')
+  const [newCafeLocationLat, setNewCafeLocationLat] = useState<number | null>(null)
+  const [newCafeLocationLng, setNewCafeLocationLng] = useState<number | null>(null)
+  const [newCafeLocationLoading, setNewCafeLocationLoading] = useState(false)
+  const [newCafeLocationError, setNewCafeLocationError] = useState('')
 
   useEffect(() => {
     fetchCafes()
@@ -100,6 +104,29 @@ function AddVisitForm() {
   const handleShowNewCafeForm = () => {
     setNewCafeName(searchTerm)
     setShowNewCafeForm(true)
+    setShowSuggestions(false)
+  }
+
+  const handleGetNewCafeLocation = () => {
+    if (!navigator.geolocation) {
+      setNewCafeLocationError('Geolocation is not supported by your browser')
+      return
+    }
+
+    setNewCafeLocationLoading(true)
+    setNewCafeLocationError('')
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setNewCafeLocationLat(position.coords.latitude)
+        setNewCafeLocationLng(position.coords.longitude)
+        setNewCafeLocationLoading(false)
+      },
+      (error) => {
+        setNewCafeLocationError('Unable to retrieve your location')
+        setNewCafeLocationLoading(false)
+      }
+    )
   }
 
   const handleCreateNewCafe = async () => {
@@ -112,7 +139,9 @@ function AddVisitForm() {
         name: newCafeName,
         area: newCafeArea || undefined,
         postcode: newCafePostcode || undefined,
-        source: 'user',
+        latitude: newCafeLocationLat || undefined,
+        longitude: newCafeLocationLng || undefined,
+        source: 'user_added',
       }),
     })
 
@@ -127,6 +156,9 @@ function AddVisitForm() {
     setNewCafeName('')
     setNewCafeArea('')
     setNewCafePostcode('')
+    setNewCafeLocationLat(null)
+    setNewCafeLocationLng(null)
+    setNewCafeLocationError('')
   }
 
   const handleItemsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -329,7 +361,7 @@ function AddVisitForm() {
             <div className="mt-4 bg-gray-50 p-6 rounded-xl border-2 border-gray-300 space-y-4">
               <h3 className="font-bold text-black text-lg">Add New Café</h3>
               <p className="text-sm text-gray-600 font-semibold">
-                This café will be added without a map pin (you can add location details later)
+                Add a new café to the list. If you&apos;re at the café, you can pin its location on the map!
               </p>
 
               <div>
@@ -369,6 +401,63 @@ function AddVisitForm() {
                   placeholder="e.g., BS8 1AB"
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg font-semibold focus:ring-2 focus:ring-black focus:border-transparent"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">
+                  📍 Pin Location (Optional)
+                </label>
+                <p className="text-xs text-gray-600 font-semibold mb-3">
+                  If you&apos;re at the café right now, pin it on the map
+                </p>
+
+                {!newCafeLocationLat && !newCafeLocationLng ? (
+                  <button
+                    type="button"
+                    onClick={handleGetNewCafeLocation}
+                    disabled={newCafeLocationLoading}
+                    className="w-full px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-bold transition-colors disabled:bg-gray-400 flex items-center justify-center gap-2"
+                  >
+                    {newCafeLocationLoading ? (
+                      <>
+                        <span className="animate-spin">⏳</span>
+                        <span>Getting location...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>📍</span>
+                        <span>Use My Current Location</span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-bold text-green-900 mb-1">Location saved!</div>
+                        <div className="text-sm text-green-700 font-mono">
+                          Lat: {newCafeLocationLat?.toFixed(6)}, Lng: {newCafeLocationLng?.toFixed(6)}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewCafeLocationLat(null)
+                          setNewCafeLocationLng(null)
+                        }}
+                        className="text-green-900 hover:text-green-700 font-bold text-2xl"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {newCafeLocationError && (
+                  <div className="mt-2 text-sm text-red-600 font-semibold">
+                    {newCafeLocationError}
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 pt-2">
