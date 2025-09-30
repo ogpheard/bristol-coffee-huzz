@@ -105,19 +105,25 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, area, neighbourhood, postcode, latitude, longitude, website } =
-      body
+    const { name, area, postcode, source } = body
+
+    if (!name) {
+      return NextResponse.json(
+        { error: 'Café name is required' },
+        { status: 400 }
+      )
+    }
 
     const cafe = await prisma.cafe.create({
       data: {
         name,
-        area,
-        neighbourhood,
-        postcode,
-        latitude,
-        longitude,
-        website,
-        source: 'user_added',
+        area: area || null,
+        postcode: postcode || null,
+        latitude: null,
+        longitude: null,
+        website: null,
+        neighbourhood: null,
+        source: source === 'user' ? 'user' : 'master',
       },
     })
 

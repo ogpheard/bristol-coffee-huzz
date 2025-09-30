@@ -14,6 +14,7 @@ type Cafe = {
 }
 
 const VISITORS = ['Eleanor', 'Hannah', 'Anna']
+const RATING_EMOJIS = ['😢', '😕', '😐', '😊', '🤩']
 
 function AddVisitForm() {
   const searchParams = useSearchParams()
@@ -39,6 +40,8 @@ function AddVisitForm() {
 
   // New cafe form
   const [newCafeName, setNewCafeName] = useState('')
+  const [newCafeArea, setNewCafeArea] = useState('')
+  const [newCafePostcode, setNewCafePostcode] = useState('')
 
   useEffect(() => {
     fetchCafes()
@@ -84,12 +87,12 @@ function AddVisitForm() {
     setSelectedCafe(cafe)
     setSearchTerm(cafe.name)
     setShowSuggestions(false)
+    setShowNewCafeForm(false)
   }
 
   const handleShowNewCafeForm = () => {
     setNewCafeName(searchTerm)
     setShowNewCafeForm(true)
-    setShowSuggestions(false)
   }
 
   const handleCreateNewCafe = async () => {
@@ -98,14 +101,25 @@ function AddVisitForm() {
     const response = await fetch('/api/cafes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newCafeName }),
+      body: JSON.stringify({
+        name: newCafeName,
+        area: newCafeArea || undefined,
+        postcode: newCafePostcode || undefined,
+        source: 'user',
+      }),
     })
 
     const newCafe = await response.json()
     setSelectedCafe(newCafe)
     setSearchTerm(newCafe.name)
     setShowNewCafeForm(false)
+    setShowSuggestions(false)
     setCafes([...cafes, newCafe])
+
+    // Reset new cafe form
+    setNewCafeName('')
+    setNewCafeArea('')
+    setNewCafePostcode('')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -160,22 +174,22 @@ function AddVisitForm() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-4xl font-bold text-black mb-2">➕ Add Visit</h1>
-        <p className="text-gray-600">Log your latest café adventure</p>
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-black mb-2">Add Visit</h1>
+        <p className="text-gray-600 font-semibold">Log your latest café adventure</p>
       </div>
 
       {success && (
-        <div className="bg-green-50 border-2 border-green-400 text-green-800 px-6 py-4 rounded-xl mb-6 flex items-center gap-3 animate-bounce">
-          <span className="text-3xl">✅</span>
+        <div className="bg-green-50 border-2 border-green-400 text-green-800 px-6 py-4 rounded-xl mb-6 flex items-center gap-3">
+          <span className="text-3xl">🎉</span>
           <div>
-            <div className="font-bold text-lg">Visit logged successfully!</div>
-            <div className="text-sm">Your café conquest continues...</div>
+            <div className="font-bold text-xl">Visit logged successfully!</div>
+            <div className="text-sm font-semibold">Keep exploring Bristol&apos;s café scene!</div>
           </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* Café Search Card */}
         <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
           <h2 className="text-xl font-bold text-black mb-4 flex items-center gap-2">
@@ -190,75 +204,113 @@ function AddVisitForm() {
               onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={() => searchTerm && setShowSuggestions(true)}
               placeholder="Search for a café..."
-              className="w-full px-5 py-4 text-lg border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+              className="w-full px-5 py-4 text-lg font-semibold border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-transparent transition-all"
               required
             />
 
-            {showSuggestions && (
+            {showSuggestions && filteredCafes.length > 0 && (
               <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-80 overflow-y-auto">
-                {filteredCafes.length > 0 ? (
-                  filteredCafes.map((cafe) => (
-                    <button
-                      key={cafe.id}
-                      type="button"
-                      onClick={() => handleSelectCafe(cafe)}
-                      className="w-full px-5 py-4 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
-                    >
-                      <div className="font-semibold text-black">{cafe.name}</div>
-                      <div className="text-sm text-gray-600 flex items-center gap-2 mt-1">
-                        {cafe.area && <span>📍 {cafe.area}</span>}
-                        {cafe.postcode && <span className="font-mono">• {cafe.postcode}</span>}
-                      </div>
-                      {cafe.visitorCounts &&
-                        Object.keys(cafe.visitorCounts).length > 0 && (
-                          <div className="text-sm text-gray-600 mt-1">
-                            Visited by:{' '}
-                            {Object.entries(cafe.visitorCounts)
-                              .map(([name, count]) => `${name} (${count}×)`)
-                              .join(', ')}
-                          </div>
-                        )}
-                    </button>
-                  ))
-                ) : (
-                  <div className="px-5 py-4">
-                    <div className="text-gray-600 mb-3">No cafés found</div>
-                    <button
-                      type="button"
-                      onClick={handleShowNewCafeForm}
-                      className="text-black hover:text-gray-700 font-semibold flex items-center gap-2"
-                    >
-                      <span className="text-xl">➕</span>
-                      <span>Add new café (no map pin yet)</span>
-                    </button>
-                  </div>
-                )}
+                {filteredCafes.map((cafe) => (
+                  <button
+                    key={cafe.id}
+                    type="button"
+                    onClick={() => handleSelectCafe(cafe)}
+                    className="w-full px-5 py-4 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                  >
+                    <div className="font-bold text-black">{cafe.name}</div>
+                    <div className="text-sm text-gray-600 font-semibold flex items-center gap-2 mt-1">
+                      {cafe.area && <span>📍 {cafe.area}</span>}
+                      {cafe.postcode && <span className="font-mono">• {cafe.postcode}</span>}
+                    </div>
+                    {cafe.visitorCounts &&
+                      Object.keys(cafe.visitorCounts).length > 0 && (
+                        <div className="text-sm text-gray-600 font-semibold mt-1">
+                          Visited by:{' '}
+                          {Object.entries(cafe.visitorCounts)
+                            .map(([name, count]) => `${name} (${count}×)`)
+                            .join(', ')}
+                        </div>
+                      )}
+                  </button>
+                ))}
               </div>
             )}
           </div>
 
+          {/* Can't find café button - shows when there are search results OR no results */}
+          {searchTerm.trim() && !selectedCafe && (
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={handleShowNewCafeForm}
+                className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-black font-bold rounded-lg transition-all border-2 border-gray-300 hover:border-black flex items-center justify-center gap-2"
+              >
+                <span className="text-xl">➕</span>
+                <span>Can&apos;t find your café? Add it here</span>
+              </button>
+            </div>
+          )}
+
+          {/* New Café Form - expands inline */}
           {showNewCafeForm && (
-            <div className="mt-4 bg-gray-50 p-5 rounded-xl border-2 border-gray-300">
-              <h3 className="font-bold text-black mb-3">Add New Café</h3>
-              <input
-                type="text"
-                value={newCafeName}
-                onChange={(e) => setNewCafeName(e.target.value)}
-                placeholder="Café name"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg mb-3"
-              />
-              <div className="flex gap-3">
+            <div className="mt-4 bg-gray-50 p-6 rounded-xl border-2 border-gray-300 space-y-4">
+              <h3 className="font-bold text-black text-lg">Add New Café</h3>
+              <p className="text-sm text-gray-600 font-semibold">
+                This café will be added without a map pin (you can add location details later)
+              </p>
+
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">
+                  Café Name *
+                </label>
+                <input
+                  type="text"
+                  value={newCafeName}
+                  onChange={(e) => setNewCafeName(e.target.value)}
+                  placeholder="e.g., The Bristol Coffee House"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg font-semibold focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">
+                  Area (optional)
+                </label>
+                <input
+                  type="text"
+                  value={newCafeArea}
+                  onChange={(e) => setNewCafeArea(e.target.value)}
+                  placeholder="e.g., Clifton, Stokes Croft"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg font-semibold focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-black mb-2">
+                  Postcode (optional)
+                </label>
+                <input
+                  type="text"
+                  value={newCafePostcode}
+                  onChange={(e) => setNewCafePostcode(e.target.value)}
+                  placeholder="e.g., BS8 1AB"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg font-semibold focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={handleCreateNewCafe}
-                  className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-semibold transition-colors"
+                  disabled={!newCafeName.trim()}
+                  className="flex-1 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-bold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  Create
+                  Create Café
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowNewCafeForm(false)}
-                  className="px-6 py-3 bg-white text-black border border-gray-200 rounded-lg hover:border-black font-semibold transition-colors"
+                  className="flex-1 px-6 py-3 bg-white text-black border-2 border-gray-300 rounded-lg hover:border-black font-bold transition-colors"
                 >
                   Cancel
                 </button>
@@ -272,9 +324,9 @@ function AddVisitForm() {
                 <span className="text-2xl">✅</span>
                 <span className="font-bold text-green-900 text-lg">Selected:</span>
               </div>
-              <div className="font-semibold text-green-900 text-xl">{selectedCafe.name}</div>
+              <div className="font-bold text-green-900 text-xl">{selectedCafe.name}</div>
               {selectedCafe.area && (
-                <div className="text-green-700 flex items-center gap-2 mt-1">
+                <div className="text-green-700 font-semibold flex items-center gap-2 mt-1">
                   <span>📍</span>
                   <span>{selectedCafe.area}</span>
                   {selectedCafe.postcode && <span className="font-mono">• {selectedCafe.postcode}</span>}
@@ -293,13 +345,13 @@ function AddVisitForm() {
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-black mb-2">
                 Who visited? *
               </label>
               <select
                 value={visitor}
                 onChange={(e) => setVisitor(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all text-lg"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all text-lg font-semibold"
                 required
               >
                 <option value="">Select visitor</option>
@@ -312,14 +364,14 @@ function AddVisitForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-black mb-2">
                 Visit Date
               </label>
               <input
                 type="date"
                 value={visitDate}
                 onChange={(e) => setVisitDate(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
               />
             </div>
           </div>
@@ -327,42 +379,109 @@ function AddVisitForm() {
 
         {/* Ratings Card */}
         <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-black flex items-center gap-2">
               <span>⭐</span>
               <span>Rate Your Experience</span>
             </h2>
-            <div className="bg-gray-100 px-4 py-2 rounded-full">
-              <span className="text-sm font-semibold text-gray-700">Overall: </span>
-              <span className="text-2xl font-bold text-black">{avgRating}</span>
+            <div className="bg-black text-white px-6 py-3 rounded-xl shadow-lg">
+              <span className="text-sm font-bold">Overall: </span>
+              <span className="text-3xl font-bold">{avgRating}</span>
             </div>
           </div>
 
           <div className="space-y-6">
-            <RatingInput
-              label="✨ Vibe"
-              description="Atmosphere, ambiance, and overall feel"
-              value={vibeRating}
-              onChange={setVibeRating}
-            />
-            <RatingInput
-              label="🍰 Food"
-              description="Quality and variety of food"
-              value={foodRating}
-              onChange={setFoodRating}
-            />
-            <RatingInput
-              label="☕ Coffee"
-              description="Coffee quality and preparation"
-              value={coffeeRating}
-              onChange={setCoffeeRating}
-            />
-            <RatingInput
-              label="💰 Value"
-              description="Price vs quality ratio"
-              value={priceRating}
-              onChange={setPriceRating}
-            />
+            {/* Vibe Rating */}
+            <div className="space-y-2">
+              <label className="text-base font-bold text-black">✨ Vibe</label>
+              <p className="text-xs text-gray-600 font-semibold">Atmosphere, ambiance, and overall feel</p>
+              <div className="grid grid-cols-5 gap-2">
+                {[1, 2, 3, 4, 5].map((rating) => (
+                  <button
+                    key={rating}
+                    type="button"
+                    onClick={() => setVibeRating(rating)}
+                    className={`py-4 px-3 rounded-lg border-2 transition-all font-bold min-h-[56px] ${
+                      vibeRating === rating
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-black border-gray-200 hover:border-black'
+                    }`}
+                  >
+                    <div className="text-2xl mb-1">{RATING_EMOJIS[rating - 1]}</div>
+                    <div>{rating}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Food Rating */}
+            <div className="space-y-2">
+              <label className="text-base font-bold text-black">🍰 Food</label>
+              <p className="text-xs text-gray-600 font-semibold">Quality and variety of food</p>
+              <div className="grid grid-cols-5 gap-2">
+                {[1, 2, 3, 4, 5].map((rating) => (
+                  <button
+                    key={rating}
+                    type="button"
+                    onClick={() => setFoodRating(rating)}
+                    className={`py-4 px-3 rounded-lg border-2 transition-all font-bold min-h-[56px] ${
+                      foodRating === rating
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-black border-gray-200 hover:border-black'
+                    }`}
+                  >
+                    <div className="text-2xl mb-1">{RATING_EMOJIS[rating - 1]}</div>
+                    <div>{rating}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Coffee Rating */}
+            <div className="space-y-2">
+              <label className="text-base font-bold text-black">☕ Coffee</label>
+              <p className="text-xs text-gray-600 font-semibold">Coffee quality and preparation</p>
+              <div className="grid grid-cols-5 gap-2">
+                {[1, 2, 3, 4, 5].map((rating) => (
+                  <button
+                    key={rating}
+                    type="button"
+                    onClick={() => setCoffeeRating(rating)}
+                    className={`py-4 px-3 rounded-lg border-2 transition-all font-bold min-h-[56px] ${
+                      coffeeRating === rating
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-black border-gray-200 hover:border-black'
+                    }`}
+                  >
+                    <div className="text-2xl mb-1">{RATING_EMOJIS[rating - 1]}</div>
+                    <div>{rating}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Rating */}
+            <div className="space-y-2">
+              <label className="text-base font-bold text-black">💰 Value</label>
+              <p className="text-xs text-gray-600 font-semibold">Price vs quality ratio</p>
+              <div className="grid grid-cols-5 gap-2">
+                {[1, 2, 3, 4, 5].map((rating) => (
+                  <button
+                    key={rating}
+                    type="button"
+                    onClick={() => setPriceRating(rating)}
+                    className={`py-4 px-3 rounded-lg border-2 transition-all font-bold min-h-[56px] ${
+                      priceRating === rating
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-black border-gray-200 hover:border-black'
+                    }`}
+                  >
+                    <div className="text-2xl mb-1">{RATING_EMOJIS[rating - 1]}</div>
+                    <div>{rating}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -375,40 +494,40 @@ function AddVisitForm() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-black mb-2">
                 🍰 Items Bought
               </label>
               <textarea
                 value={itemsBought}
                 onChange={(e) => setItemsBought(e.target.value)}
                 placeholder="e.g., Flat white, almond croissant, avocado toast"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
                 rows={2}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-black mb-2">
                 💡 Recommendations
               </label>
               <textarea
                 value={recommendations}
                 onChange={(e) => setRecommendations(e.target.value)}
                 placeholder="What should others try? e.g., Try the blueberry muffin!"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
                 rows={2}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-black mb-2">
                 📋 Notes
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Any other thoughts or observations?"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
                 rows={3}
               />
             </div>
@@ -438,57 +557,13 @@ function AddVisitForm() {
   )
 }
 
-function RatingInput({
-  label,
-  description,
-  value,
-  onChange,
-}: {
-  label: string
-  description: string
-  value: number
-  onChange: (value: number) => void
-}) {
-  const emojis = ['😢', '😕', '😐', '😊', '🤩']
-
-  return (
-    <div className="bg-gray-50 p-5 rounded-lg">
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <label className="text-base font-bold text-black">{label}</label>
-          <p className="text-xs text-gray-600 mt-1">{description}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-3xl">{emojis[value - 1]}</span>
-          <span className="text-3xl font-bold text-black">{value}</span>
-        </div>
-      </div>
-      <input
-        type="range"
-        min="1"
-        max="5"
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
-      />
-      <div className="flex justify-between text-xs text-gray-500 mt-2 px-1">
-        <span>1</span>
-        <span>2</span>
-        <span>3</span>
-        <span>4</span>
-        <span>5</span>
-      </div>
-    </div>
-  )
-}
-
 export default function AddVisitPage() {
   return (
     <Suspense fallback={
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-black mb-6">Add Visit</h1>
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-black mb-6">Add Visit</h1>
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="text-center py-8 text-gray-600">Loading...</div>
+          <div className="text-center py-8 text-gray-600 font-semibold">Loading...</div>
         </div>
       </div>
     }>
