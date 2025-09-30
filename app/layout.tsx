@@ -15,7 +15,7 @@ const fredoka = Fredoka({
 });
 
 export const metadata: Metadata = {
-  title: "Bristol Brew Baddies",
+  title: "The Ultimate Huzz Quest",
   description: "The ultimate café quest across Bristol - Track, rate, and conquer every coffee spot!",
 };
 
@@ -38,8 +38,8 @@ export default function RootLayout({
                   <div className="flex items-center gap-3">
                     <div className="text-3xl transform group-hover:scale-110 transition-transform">☕</div>
                     <div>
-                      <h1 className="text-xl font-bold text-white tracking-tight">Bristol Brew Baddies</h1>
-                      <p className="text-gray-400 text-xs">The Ultimate Café Quest</p>
+                      <h1 className="text-xl font-bold text-white tracking-tight">The Ultimate Huzz Quest</h1>
+                      <p className="text-gray-400 text-xs">Bristol&apos;s Café Conquest</p>
                     </div>
                   </div>
                 </Link>
@@ -82,6 +82,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
     <Link
       href={href}
       className="px-4 py-3 text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-100 rounded-lg transition-all whitespace-nowrap"
+      style={{ fontFamily: 'var(--font-fredoka)' }}
     >
       {children}
     </Link>

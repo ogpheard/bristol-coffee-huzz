@@ -105,7 +105,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, area, postcode, source } = body
+    const { name, area, postcode, latitude, longitude, source } = body
 
     if (!name) {
       return NextResponse.json(
@@ -119,11 +119,11 @@ export async function POST(request: Request) {
         name,
         area: area || null,
         postcode: postcode || null,
-        latitude: null,
-        longitude: null,
+        latitude: latitude || null,
+        longitude: longitude || null,
         website: null,
         neighbourhood: null,
-        source: source === 'user' ? 'user' : 'master',
+        source: source || 'user_added',
       },
     })
 

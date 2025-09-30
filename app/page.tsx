@@ -7,7 +7,7 @@ export default function Home() {
       <div className="bg-black rounded-2xl shadow-2xl p-12 text-center mb-8">
         <div className="text-6xl mb-4">☕</div>
         <h1 className="text-5xl font-bold text-white mb-4">
-          Bristol Brew Baddies
+          The Ultimate Huzz Quest
         </h1>
         <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
           The ultimate café conquest! Track every visit, rate every brew, and compete with your crew across Bristol&apos;s finest coffee spots.

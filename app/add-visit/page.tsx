@@ -40,10 +40,6 @@ function AddVisitForm() {
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [locationLat, setLocationLat] = useState<number | null>(null)
-  const [locationLng, setLocationLng] = useState<number | null>(null)
-  const [locationLoading, setLocationLoading] = useState(false)
-  const [locationError, setLocationError] = useState('')
 
   // New cafe form
   const [newCafeName, setNewCafeName] = useState('')
@@ -185,28 +181,6 @@ function AddVisitForm() {
     setRecommendationsTags(recommendationsTags.filter((_, i) => i !== index))
   }
 
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by your browser')
-      return
-    }
-
-    setLocationLoading(true)
-    setLocationError('')
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocationLat(position.coords.latitude)
-        setLocationLng(position.coords.longitude)
-        setLocationLoading(false)
-      },
-      (error) => {
-        setLocationError('Unable to retrieve your location')
-        setLocationLoading(false)
-      }
-    )
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedCafe || !visitor) return
@@ -232,8 +206,6 @@ function AddVisitForm() {
           itemsBought: itemsBoughtStr,
           recommendations: recommendationsStr,
           notes: notes || null,
-          locationLat,
-          locationLng,
         }),
       })
 
@@ -252,9 +224,6 @@ function AddVisitForm() {
         setRecommendationsTags([])
         setRecommendationsInput('')
         setNotes('')
-        setLocationLat(null)
-        setLocationLng(null)
-        setLocationError('')
         fetchCafes()
 
         setTimeout(() => setSuccess(false), 5000)
@@ -735,63 +704,6 @@ function AddVisitForm() {
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
                 rows={3}
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-black mb-2">
-                📍 Add Location (Optional)
-              </label>
-              <p className="text-xs text-gray-600 font-semibold mb-3">
-                Pin your exact location for this visit
-              </p>
-
-              {!locationLat && !locationLng ? (
-                <button
-                  type="button"
-                  onClick={handleGetLocation}
-                  disabled={locationLoading}
-                  className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-900 font-bold transition-colors disabled:bg-gray-400 flex items-center gap-2"
-                >
-                  {locationLoading ? (
-                    <>
-                      <span className="animate-spin">⏳</span>
-                      <span>Getting location...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>📍</span>
-                      <span>Use My Current Location</span>
-                    </>
-                  )}
-                </button>
-              ) : (
-                <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-green-900 mb-1">Location saved!</div>
-                      <div className="text-sm text-green-700 font-mono">
-                        Lat: {locationLat?.toFixed(6)}, Lng: {locationLng?.toFixed(6)}
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setLocationLat(null)
-                        setLocationLng(null)
-                      }}
-                      className="text-green-900 hover:text-green-700 font-bold text-2xl"
-                    >
-                      ×
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {locationError && (
-                <div className="mt-2 text-sm text-red-600 font-semibold">
-                  {locationError}
-                </div>
-              )}
             </div>
           </div>
         </div>
