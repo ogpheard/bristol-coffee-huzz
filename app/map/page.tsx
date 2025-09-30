@@ -30,16 +30,53 @@ export default function MapPage() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const markers = useRef<mapboxgl.Marker[]>([])
+  const userLocationMarker = useRef<mapboxgl.Marker | null>(null)
   const [cafes, setCafes] = useState<Cafe[]>([])
   const [filteredCafes, setFilteredCafes] = useState<Cafe[]>([])
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterVisited, setFilterVisited] = useState<'all' | 'visited' | 'unvisited'>('all')
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [nearbyCafes, setNearbyCafes] = useState<(Cafe & { distance: number })[]>([])
+  const [nearbyFilter, setNearbyFilter] = useState<'all' | 'visited' | 'unvisited'>('all')
 
   useEffect(() => {
     fetchCafes()
+    getUserLocation()
   }, [])
+
+  const getUserLocation = () => {
+    if (!navigator.geolocation) return
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const location = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        }
+        setUserLocation(location)
+      },
+      (error) => {
+        console.error('Error getting location:', error)
+      }
+    )
+  }
+
+  // Calculate distance between two points using Haversine formula
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371 // Earth's radius in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180
+    const dLng = ((lng2 - lng1) * Math.PI) / 180
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c
+  }
 
   const fetchCafes = async () => {
     try {
@@ -54,6 +91,27 @@ export default function MapPage() {
       setLoading(false)
     }
   }
+
+  // Calculate nearby cafes when user location or cafes change
+  useEffect(() => {
+    if (!userLocation) return
+
+    const cafesWithDistance = cafes
+      .filter((cafe) => cafe.latitude && cafe.longitude)
+      .map((cafe) => ({
+        ...cafe,
+        distance: calculateDistance(
+          userLocation.lat,
+          userLocation.lng,
+          cafe.latitude!,
+          cafe.longitude!
+        ),
+      }))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 10) // Top 10 nearest cafes
+
+    setNearbyCafes(cafesWithDistance)
+  }, [userLocation, cafes])
 
   // Filter cafes based on search and visited status
   useEffect(() => {
@@ -108,6 +166,12 @@ export default function MapPage() {
     filteredCafes.forEach((cafe) => {
       if (!cafe.latitude || !cafe.longitude) return
 
+      // Create wrapper to contain both marker and badge
+      const wrapper = document.createElement('div')
+      wrapper.style.position = 'relative'
+      wrapper.style.width = '36px'
+      wrapper.style.height = '36px'
+
       const el = document.createElement('div')
       el.className = 'cafe-marker'
       el.style.width = '36px'
@@ -124,7 +188,6 @@ export default function MapPage() {
 
       // Add visitor badges
       if (cafe.uniqueVisitors.length > 0) {
-        el.style.position = 'relative'
         const badge = document.createElement('div')
         badge.className = 'visitor-badge'
         badge.textContent = cafe.uniqueVisitors
@@ -140,12 +203,16 @@ export default function MapPage() {
         badge.style.borderRadius = '6px'
         badge.style.fontWeight = 'bold'
         badge.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)'
-        el.appendChild(badge)
+        badge.style.fontFamily = 'var(--font-fredoka)'
+        badge.style.pointerEvents = 'none'
+        wrapper.appendChild(badge)
       }
+
+      wrapper.appendChild(el)
 
       // Create popup with café name and rating
       const popupContent = `
-        <div style="padding: 8px; min-width: 150px;">
+        <div style="padding: 8px; min-width: 150px; font-family: var(--font-fredoka);">
           <div style="font-weight: bold; font-size: 14px; margin-bottom: 4px; color: #1f2937;">
             ${cafe.name}
           </div>
@@ -174,7 +241,7 @@ export default function MapPage() {
         maxWidth: '300px'
       }).setHTML(popupContent)
 
-      const marker = new mapboxgl.Marker(el)
+      const marker = new mapboxgl.Marker(wrapper)
         .setLngLat([cafe.longitude, cafe.latitude])
         .setPopup(popup)
         .addTo(map.current!)
@@ -207,6 +274,48 @@ export default function MapPage() {
       markers.current.push(marker)
     })
   }, [filteredCafes])
+
+  // Add user location marker
+  useEffect(() => {
+    if (!map.current || !userLocation) return
+
+    // Remove existing user location marker
+    if (userLocationMarker.current) {
+      userLocationMarker.current.remove()
+    }
+
+    // Create user location marker
+    const el = document.createElement('div')
+    el.style.width = '24px'
+    el.style.height = '24px'
+    el.style.borderRadius = '50%'
+    el.style.backgroundColor = '#3b82f6'
+    el.style.border = '4px solid white'
+    el.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3), 0 0 0 8px rgba(59, 130, 246, 0.2)'
+    el.style.cursor = 'pointer'
+
+    const popup = new mapboxgl.Popup({
+      offset: 15,
+      closeButton: false,
+    }).setHTML(`
+      <div style="padding: 6px; font-family: var(--font-fredoka); font-weight: 600;">
+        📍 Your Location
+      </div>
+    `)
+
+    userLocationMarker.current = new mapboxgl.Marker(el)
+      .setLngLat([userLocation.lng, userLocation.lat])
+      .setPopup(popup)
+      .addTo(map.current)
+
+    el.addEventListener('mouseenter', () => {
+      popup.addTo(map.current!)
+    })
+
+    el.addEventListener('mouseleave', () => {
+      popup.remove()
+    })
+  }, [userLocation])
 
   if (!MAPBOX_TOKEN) {
     return (
@@ -322,7 +431,80 @@ export default function MapPage() {
           <div ref={mapContainer} className="w-full h-full rounded-xl shadow-2xl" />
         </div>
 
-        {/* Sidebar */}
+        {/* Nearby Cafes Sidebar */}
+        {userLocation && !selectedCafe && nearbyCafes.length > 0 && (
+          <div className="w-96 bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="bg-black p-6">
+              <h2 className="text-2xl font-bold text-white mb-2">📍 Nearby Cafés</h2>
+              <p className="text-gray-300 text-sm">Closest cafés to your location</p>
+            </div>
+
+            <div className="p-4 border-b border-gray-200">
+              <select
+                value={nearbyFilter}
+                onChange={(e) => setNearbyFilter(e.target.value as 'all' | 'visited' | 'unvisited')}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
+              >
+                <option value="all">All Nearby</option>
+                <option value="visited">Visited Only</option>
+                <option value="unvisited">Unvisited Only</option>
+              </select>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {nearbyCafes
+                .filter((cafe) => {
+                  if (nearbyFilter === 'visited') return cafe.totalVisits > 0
+                  if (nearbyFilter === 'unvisited') return cafe.totalVisits === 0
+                  return true
+                })
+                .map((cafe) => (
+                  <button
+                    key={cafe.id}
+                    onClick={() => {
+                      setSelectedCafe(cafe)
+                      map.current?.flyTo({
+                        center: [cafe.longitude!, cafe.latitude!],
+                        zoom: 15,
+                        duration: 1000,
+                      })
+                    }}
+                    className="w-full p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-black mb-1">{cafe.name}</h3>
+                        {cafe.area && (
+                          <p className="text-sm text-gray-600 mb-2">📍 {cafe.area}</p>
+                        )}
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-gray-600 font-semibold">
+                            🚶 {cafe.distance < 1
+                              ? `${Math.round(cafe.distance * 1000)}m`
+                              : `${cafe.distance.toFixed(1)}km`}
+                          </span>
+                          {cafe.totalVisits > 0 ? (
+                            <span className="bg-black text-white px-2 py-1 rounded font-bold">
+                              ⭐ {cafe.avgRating.toFixed(1)}
+                            </span>
+                          ) : (
+                            <span className="bg-gray-200 text-gray-600 px-2 py-1 rounded font-bold">
+                              Not visited
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-2xl">
+                        {cafe.totalVisits > 0 ? '✅' : '📍'}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {/* Selected Cafe Sidebar */}
         {selectedCafe && (
           <div className="w-96 bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
             {/* Header */}
