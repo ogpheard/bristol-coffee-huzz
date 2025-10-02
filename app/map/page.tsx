@@ -169,20 +169,19 @@ export default function MapPage() {
       // Create main marker element
       const el = document.createElement('div')
       el.className = 'cafe-marker'
-      el.style.width = '36px'
-      el.style.height = '36px'
+      el.style.width = '32px'
+      el.style.height = '32px'
       el.style.borderRadius = '50%'
       el.style.cursor = 'pointer'
       el.style.border = '3px solid white'
-      el.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)'
-      el.style.transition = 'transform 0.2s, box-shadow 0.2s'
-      el.style.position = 'relative'
+      el.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)'
+      el.style.transition = 'box-shadow 0.2s, border-width 0.2s'
 
       // Color based on rating
       const color = getColorForRating(cafe.avgRating)
       el.style.backgroundColor = color
 
-      // Add visitor badges directly to marker element
+      // Add visitor badges
       if (cafe.uniqueVisitors.length > 0) {
         const badge = document.createElement('div')
         badge.className = 'visitor-badge'
@@ -190,12 +189,12 @@ export default function MapPage() {
           .map((v) => v[0])
           .join('')
         badge.style.position = 'absolute'
-        badge.style.top = '-10px'
-        badge.style.right = '-10px'
+        badge.style.top = '-8px'
+        badge.style.right = '-8px'
         badge.style.backgroundColor = '#000000'
         badge.style.color = 'white'
-        badge.style.fontSize = '11px'
-        badge.style.padding = '3px 6px'
+        badge.style.fontSize = '10px'
+        badge.style.padding = '2px 5px'
         badge.style.borderRadius = '6px'
         badge.style.fontWeight = 'bold'
         badge.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)'
@@ -245,17 +244,17 @@ export default function MapPage() {
         .setPopup(popup)
         .addTo(map.current!)
 
-      // Hover effect and popup toggle
+      // Hover effect - NO TRANSFORM to prevent marker movement
       el.addEventListener('mouseenter', () => {
-        el.style.transform = 'scale(1.2)'
-        el.style.boxShadow = '0 6px 12px rgba(0,0,0,0.4)'
+        el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5)'
+        el.style.borderWidth = '4px'
         el.style.zIndex = '1000'
         marker.togglePopup()
       })
 
       el.addEventListener('mouseleave', () => {
-        el.style.transform = 'scale(1)'
-        el.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)'
+        el.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)'
+        el.style.borderWidth = '3px'
         el.style.zIndex = 'auto'
         marker.togglePopup()
       })
@@ -285,13 +284,14 @@ export default function MapPage() {
 
     // Create user location marker
     const el = document.createElement('div')
-    el.style.width = '24px'
-    el.style.height = '24px'
+    el.style.width = '20px'
+    el.style.height = '20px'
     el.style.borderRadius = '50%'
     el.style.backgroundColor = '#3b82f6'
-    el.style.border = '4px solid white'
-    el.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3), 0 0 0 8px rgba(59, 130, 246, 0.2)'
+    el.style.border = '3px solid white'
+    el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.4), 0 0 0 10px rgba(59, 130, 246, 0.2)'
     el.style.cursor = 'pointer'
+    el.style.zIndex = '999'
 
     const popup = new mapboxgl.Popup({
       offset: 15,
@@ -302,7 +302,10 @@ export default function MapPage() {
       </div>
     `)
 
-    userLocationMarker.current = new mapboxgl.Marker(el)
+    userLocationMarker.current = new mapboxgl.Marker({
+      element: el,
+      anchor: 'center'
+    })
       .setLngLat([userLocation.lng, userLocation.lat])
       .setPopup(popup)
       .addTo(map.current)
