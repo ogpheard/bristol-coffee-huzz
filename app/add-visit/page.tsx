@@ -34,7 +34,6 @@ function AddVisitForm() {
   const [coffeeTextureRating, setCoffeeTextureRating] = useState(3)
   const [coffeeMugRating, setCoffeeMugRating] = useState(3)
   const [priceRating, setPriceRating] = useState(3)
-  const [showCoffeeDetails, setShowCoffeeDetails] = useState(false)
   const [itemsTags, setItemsTags] = useState<string[]>([])
   const [itemsInput, setItemsInput] = useState('')
   const [recommendationsTags, setRecommendationsTags] = useState<string[]>([])
@@ -523,30 +522,129 @@ function AddVisitForm() {
               <label className="block text-sm font-bold text-black mb-2">
                 Visit Date
               </label>
-              <input
-                type="date"
-                value={visitDate}
-                onChange={(e) => setVisitDate(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
-              />
+              <div className="grid grid-cols-3 gap-3">
+                <input
+                  type="date"
+                  value={visitDate}
+                  onChange={(e) => setVisitDate(e.target.value)}
+                  className="col-span-3 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Ratings Card */}
         <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border-2 border-gray-200">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
-            <h2 className="text-xl font-bold text-black flex items-center gap-2">
-              <span>⭐</span>
-              <span>Rate Your Experience</span>
-            </h2>
-            <div className="bg-black text-white px-6 py-3 rounded-xl shadow-lg">
-              <span className="text-sm font-bold">Overall: </span>
-              <span className="text-3xl font-bold">{avgRating}</span>
-            </div>
-          </div>
+          <h2 className="text-xl font-bold text-black flex items-center gap-2 mb-6">
+            <span>⭐</span>
+            <span>Rate Your Experience</span>
+          </h2>
 
           <div className="space-y-6">
+            {/* Coffee Section - First */}
+            <div className="space-y-4 bg-amber-50 p-4 rounded-lg border-2 border-amber-200">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-lg font-bold text-black">☕ Coffee Rating</h3>
+              </div>
+
+              {/* Taste */}
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-black">👅 Taste</label>
+                <p className="text-xs text-gray-600 font-semibold">Flavor profile and richness</p>
+                <div className="grid grid-cols-5 gap-2">
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <button
+                      key={rating}
+                      type="button"
+                      onClick={() => setCoffeeTasteRating(rating)}
+                      className={`py-3 px-2 rounded-lg border-2 transition-all font-bold ${
+                        coffeeTasteRating === rating
+                          ? 'bg-black text-white border-black'
+                          : 'bg-white text-black border-gray-200 hover:border-black'
+                      }`}
+                    >
+                      <div className="text-xl font-bold">{rating}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Presentation */}
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-black">🎨 Presentation</label>
+                <p className="text-xs text-gray-600 font-semibold">Latte art and visual appeal</p>
+                <div className="grid grid-cols-5 gap-2">
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <button
+                      key={rating}
+                      type="button"
+                      onClick={() => setCoffeePresentationRating(rating)}
+                      className={`py-3 px-2 rounded-lg border-2 transition-all font-bold ${
+                        coffeePresentationRating === rating
+                          ? 'bg-black text-white border-black'
+                          : 'bg-white text-black border-gray-200 hover:border-black'
+                      }`}
+                    >
+                      <div className="text-xl font-bold">{rating}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Texture */}
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-black">🥛 Texture</label>
+                <p className="text-xs text-gray-600 font-semibold">Smoothness and consistency</p>
+                <div className="grid grid-cols-5 gap-2">
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <button
+                      key={rating}
+                      type="button"
+                      onClick={() => setCoffeeTextureRating(rating)}
+                      className={`py-3 px-2 rounded-lg border-2 transition-all font-bold ${
+                        coffeeTextureRating === rating
+                          ? 'bg-black text-white border-black'
+                          : 'bg-white text-black border-gray-200 hover:border-black'
+                      }`}
+                    >
+                      <div className="text-xl font-bold">{rating}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mug */}
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-black">☕ Mug</label>
+                <p className="text-xs text-gray-600 font-semibold">Quality and design of the mug</p>
+                <div className="grid grid-cols-5 gap-2">
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <button
+                      key={rating}
+                      type="button"
+                      onClick={() => setCoffeeMugRating(rating)}
+                      className={`py-3 px-2 rounded-lg border-2 transition-all font-bold ${
+                        coffeeMugRating === rating
+                          ? 'bg-black text-white border-black'
+                          : 'bg-white text-black border-gray-200 hover:border-black'
+                      }`}
+                    >
+                      <div className="text-xl font-bold">{rating}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Coffee Average */}
+              <div className="bg-white border-2 border-amber-300 rounded-lg p-3 mt-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-gray-700">Coffee Average:</span>
+                  <span className="text-2xl font-bold text-black">{coffeeRating.toFixed(1)}</span>
+                </div>
+              </div>
+            </div>
+
             {/* Vibe Rating */}
             <div className="space-y-2">
               <label className="text-base font-bold text-black">✨ Vibe</label>
@@ -591,121 +689,6 @@ function AddVisitForm() {
               </div>
             </div>
 
-            {/* Coffee Rating */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <label className="text-base font-bold text-black">☕ Coffee</label>
-                  <p className="text-xs text-gray-600 font-semibold">Overall coffee rating (average of 4 components)</p>
-                </div>
-                <div className="bg-gray-100 px-4 py-2 rounded-lg">
-                  <span className="text-sm font-bold text-gray-600">Avg: </span>
-                  <span className="text-xl font-bold text-black">{coffeeRating.toFixed(1)}</span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowCoffeeDetails(!showCoffeeDetails)}
-                className="w-full py-3 px-4 bg-gray-50 border-2 border-gray-200 rounded-lg hover:bg-gray-100 transition-all font-bold text-black flex items-center justify-between"
-              >
-                <span>{showCoffeeDetails ? '▼' : '▶'} Rate Coffee Components</span>
-                <span className="text-sm text-gray-600">{showCoffeeDetails ? 'Hide' : 'Show'} Details</span>
-              </button>
-
-              {showCoffeeDetails && (
-                <div className="space-y-4 bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
-                  {/* Taste */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-black">👅 Taste</label>
-                    <p className="text-xs text-gray-600 font-semibold">Flavor profile and richness</p>
-                    <div className="grid grid-cols-5 gap-2">
-                      {[1, 2, 3, 4, 5].map((rating) => (
-                        <button
-                          key={rating}
-                          type="button"
-                          onClick={() => setCoffeeTasteRating(rating)}
-                          className={`py-3 px-2 rounded-lg border-2 transition-all font-bold ${
-                            coffeeTasteRating === rating
-                              ? 'bg-black text-white border-black'
-                              : 'bg-white text-black border-gray-200 hover:border-black'
-                          }`}
-                        >
-                          <div className="text-xl font-bold">{rating}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Presentation */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-black">🎨 Presentation</label>
-                    <p className="text-xs text-gray-600 font-semibold">Latte art and visual appeal</p>
-                    <div className="grid grid-cols-5 gap-2">
-                      {[1, 2, 3, 4, 5].map((rating) => (
-                        <button
-                          key={rating}
-                          type="button"
-                          onClick={() => setCoffeePresentationRating(rating)}
-                          className={`py-3 px-2 rounded-lg border-2 transition-all font-bold ${
-                            coffeePresentationRating === rating
-                              ? 'bg-black text-white border-black'
-                              : 'bg-white text-black border-gray-200 hover:border-black'
-                          }`}
-                        >
-                          <div className="text-xl font-bold">{rating}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Texture */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-black">🥛 Texture</label>
-                    <p className="text-xs text-gray-600 font-semibold">Smoothness and consistency</p>
-                    <div className="grid grid-cols-5 gap-2">
-                      {[1, 2, 3, 4, 5].map((rating) => (
-                        <button
-                          key={rating}
-                          type="button"
-                          onClick={() => setCoffeeTextureRating(rating)}
-                          className={`py-3 px-2 rounded-lg border-2 transition-all font-bold ${
-                            coffeeTextureRating === rating
-                              ? 'bg-black text-white border-black'
-                              : 'bg-white text-black border-gray-200 hover:border-black'
-                          }`}
-                        >
-                          <div className="text-xl font-bold">{rating}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Mug */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold text-black">☕ Mug</label>
-                    <p className="text-xs text-gray-600 font-semibold">Quality and design of the mug</p>
-                    <div className="grid grid-cols-5 gap-2">
-                      {[1, 2, 3, 4, 5].map((rating) => (
-                        <button
-                          key={rating}
-                          type="button"
-                          onClick={() => setCoffeeMugRating(rating)}
-                          className={`py-3 px-2 rounded-lg border-2 transition-all font-bold ${
-                            coffeeMugRating === rating
-                              ? 'bg-black text-white border-black'
-                              : 'bg-white text-black border-gray-200 hover:border-black'
-                          }`}
-                        >
-                          <div className="text-xl font-bold">{rating}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* Price Rating */}
             <div className="space-y-2">
               <label className="text-base font-bold text-black">💰 Value</label>
@@ -725,6 +708,14 @@ function AddVisitForm() {
                     <div className="text-2xl font-bold">{rating}</div>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Overall Rating at Bottom */}
+            <div className="bg-black text-white px-6 py-4 rounded-xl shadow-lg mt-6">
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-bold">Overall Rating:</span>
+                <span className="text-4xl font-bold">{avgRating}</span>
               </div>
             </div>
           </div>
