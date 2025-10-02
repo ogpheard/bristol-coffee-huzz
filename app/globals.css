@@ -55,12 +55,42 @@ button {
 
 /* Make typed text in inputs darker and bolder */
 input, textarea, select {
-  color: #000000;
+  color: #000000 !important;
   font-weight: 600;
+}
+
+/* Ensure date input text is black */
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+  color: #000000 !important;
+}
+
+input[type="date"] {
+  color: #000000 !important;
 }
 
 @media (prefers-color-scheme: dark) {
   input, textarea, select {
     color: #ffffff;
+  }
+}
+
+/* Mobile optimization for iPhone */
+@media (max-width: 640px) {
+  /* Prevent text from being too small on mobile */
+  body {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Better button spacing on mobile */
+  button {
+    min-height: 44px;
+  }
+
+  /* Ensure input fields are comfortable to tap */
+  input, textarea, select {
+    min-height: 44px;
   }
 }

@@ -29,12 +29,14 @@ function AddVisitForm() {
   const [visitDate, setVisitDate] = useState(new Date().toISOString().split('T')[0])
   const [vibeRating, setVibeRating] = useState(3)
   const [foodRating, setFoodRating] = useState(3)
-  const [coffeeRating, setCoffeeRating] = useState(3)
+  const [coffeeTasteRating, setCoffeeTasteRating] = useState(3)
+  const [coffeePresentationRating, setCoffeePresentationRating] = useState(3)
+  const [coffeeTextureRating, setCoffeeTextureRating] = useState(3)
+  const [coffeeMugRating, setCoffeeMugRating] = useState(3)
   const [priceRating, setPriceRating] = useState(3)
-  const [itemsBought, setItemsBought] = useState('')
+  const [showCoffeeDetails, setShowCoffeeDetails] = useState(false)
   const [itemsTags, setItemsTags] = useState<string[]>([])
   const [itemsInput, setItemsInput] = useState('')
-  const [recommendations, setRecommendations] = useState('')
   const [recommendationsTags, setRecommendationsTags] = useState<string[]>([])
   const [recommendationsInput, setRecommendationsInput] = useState('')
   const [notes, setNotes] = useState('')
@@ -118,7 +120,7 @@ function AddVisitForm() {
         setNewCafeLocationLng(position.coords.longitude)
         setNewCafeLocationLoading(false)
       },
-      (error) => {
+      () => {
         setNewCafeLocationError('Unable to retrieve your location')
         setNewCafeLocationLoading(false)
       }
@@ -165,6 +167,13 @@ function AddVisitForm() {
     }
   }
 
+  const handleAddItem = () => {
+    if (itemsInput.trim()) {
+      setItemsTags([...itemsTags, itemsInput.trim()])
+      setItemsInput('')
+    }
+  }
+
   const removeItemsTag = (index: number) => {
     setItemsTags(itemsTags.filter((_, i) => i !== index))
   }
@@ -172,6 +181,13 @@ function AddVisitForm() {
   const handleRecommendationsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && recommendationsInput.trim()) {
       e.preventDefault()
+      setRecommendationsTags([...recommendationsTags, recommendationsInput.trim()])
+      setRecommendationsInput('')
+    }
+  }
+
+  const handleAddRecommendation = () => {
+    if (recommendationsInput.trim()) {
       setRecommendationsTags([...recommendationsTags, recommendationsInput.trim()])
       setRecommendationsInput('')
     }
@@ -217,7 +233,10 @@ function AddVisitForm() {
         setVisitor('')
         setVibeRating(3)
         setFoodRating(3)
-        setCoffeeRating(3)
+        setCoffeeTasteRating(3)
+        setCoffeePresentationRating(3)
+        setCoffeeTextureRating(3)
+        setCoffeeMugRating(3)
         setPriceRating(3)
         setItemsTags([])
         setItemsInput('')
@@ -235,12 +254,15 @@ function AddVisitForm() {
     }
   }
 
+  // Calculate average coffee rating from the 4 components
+  const coffeeRating = ((coffeeTasteRating + coffeePresentationRating + coffeeTextureRating + coffeeMugRating) / 4)
+
   const avgRating = ((vibeRating + foodRating + coffeeRating + priceRating) / 4).toFixed(1)
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-black mb-2">Add Visit</h1>
+    <div className="max-w-4xl mx-auto px-2 sm:px-0">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-black mb-2">Add Visit</h1>
         <p className="text-gray-600 font-semibold">Log your latest café adventure</p>
       </div>
 
@@ -254,9 +276,9 @@ function AddVisitForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
         {/* Café Search Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border-2 border-gray-200">
           <h2 className="text-xl font-bold text-black mb-4 flex items-center gap-2">
             <span>☕</span>
             <span>Select Café</span>
@@ -468,7 +490,7 @@ function AddVisitForm() {
         </div>
 
         {/* Visitor & Date Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border-2 border-gray-200">
           <h2 className="text-xl font-bold text-black mb-4 flex items-center gap-2">
             <span>👤</span>
             <span>Visit Details</span>
@@ -485,7 +507,7 @@ function AddVisitForm() {
                     key={v}
                     type="button"
                     onClick={() => setVisitor(v)}
-                    className={`py-4 px-6 rounded-lg border-2 transition-all font-bold text-lg ${
+                    className={`py-4 px-6 rounded-lg border-2 transition-all font-bold text-lg text-center flex items-center justify-center ${
                       visitor === v
                         ? 'bg-black text-white border-black'
                         : 'bg-white text-black border-gray-200 hover:border-black'
@@ -512,8 +534,8 @@ function AddVisitForm() {
         </div>
 
         {/* Ratings Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border-2 border-gray-200">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
             <h2 className="text-xl font-bold text-black flex items-center gap-2">
               <span>⭐</span>
               <span>Rate Your Experience</span>
@@ -571,24 +593,117 @@ function AddVisitForm() {
 
             {/* Coffee Rating */}
             <div className="space-y-2">
-              <label className="text-base font-bold text-black">☕ Coffee</label>
-              <p className="text-xs text-gray-600 font-semibold">Coffee quality and preparation</p>
-              <div className="grid grid-cols-5 gap-2">
-                {[1, 2, 3, 4, 5].map((rating) => (
-                  <button
-                    key={rating}
-                    type="button"
-                    onClick={() => setCoffeeRating(rating)}
-                    className={`py-4 px-3 rounded-lg border-2 transition-all font-bold min-h-[56px] ${
-                      coffeeRating === rating
-                        ? 'bg-black text-white border-black'
-                        : 'bg-white text-black border-gray-200 hover:border-black'
-                    }`}
-                  >
-                    <div className="text-2xl font-bold">{rating}</div>
-                  </button>
-                ))}
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="text-base font-bold text-black">☕ Coffee</label>
+                  <p className="text-xs text-gray-600 font-semibold">Overall coffee rating (average of 4 components)</p>
+                </div>
+                <div className="bg-gray-100 px-4 py-2 rounded-lg">
+                  <span className="text-sm font-bold text-gray-600">Avg: </span>
+                  <span className="text-xl font-bold text-black">{coffeeRating.toFixed(1)}</span>
+                </div>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setShowCoffeeDetails(!showCoffeeDetails)}
+                className="w-full py-3 px-4 bg-gray-50 border-2 border-gray-200 rounded-lg hover:bg-gray-100 transition-all font-bold text-black flex items-center justify-between"
+              >
+                <span>{showCoffeeDetails ? '▼' : '▶'} Rate Coffee Components</span>
+                <span className="text-sm text-gray-600">{showCoffeeDetails ? 'Hide' : 'Show'} Details</span>
+              </button>
+
+              {showCoffeeDetails && (
+                <div className="space-y-4 bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
+                  {/* Taste */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-black">👅 Taste</label>
+                    <p className="text-xs text-gray-600 font-semibold">Flavor profile and richness</p>
+                    <div className="grid grid-cols-5 gap-2">
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <button
+                          key={rating}
+                          type="button"
+                          onClick={() => setCoffeeTasteRating(rating)}
+                          className={`py-3 px-2 rounded-lg border-2 transition-all font-bold ${
+                            coffeeTasteRating === rating
+                              ? 'bg-black text-white border-black'
+                              : 'bg-white text-black border-gray-200 hover:border-black'
+                          }`}
+                        >
+                          <div className="text-xl font-bold">{rating}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Presentation */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-black">🎨 Presentation</label>
+                    <p className="text-xs text-gray-600 font-semibold">Latte art and visual appeal</p>
+                    <div className="grid grid-cols-5 gap-2">
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <button
+                          key={rating}
+                          type="button"
+                          onClick={() => setCoffeePresentationRating(rating)}
+                          className={`py-3 px-2 rounded-lg border-2 transition-all font-bold ${
+                            coffeePresentationRating === rating
+                              ? 'bg-black text-white border-black'
+                              : 'bg-white text-black border-gray-200 hover:border-black'
+                          }`}
+                        >
+                          <div className="text-xl font-bold">{rating}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Texture */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-black">🥛 Texture</label>
+                    <p className="text-xs text-gray-600 font-semibold">Smoothness and consistency</p>
+                    <div className="grid grid-cols-5 gap-2">
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <button
+                          key={rating}
+                          type="button"
+                          onClick={() => setCoffeeTextureRating(rating)}
+                          className={`py-3 px-2 rounded-lg border-2 transition-all font-bold ${
+                            coffeeTextureRating === rating
+                              ? 'bg-black text-white border-black'
+                              : 'bg-white text-black border-gray-200 hover:border-black'
+                          }`}
+                        >
+                          <div className="text-xl font-bold">{rating}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mug */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-black">☕ Mug</label>
+                    <p className="text-xs text-gray-600 font-semibold">Quality and design of the mug</p>
+                    <div className="grid grid-cols-5 gap-2">
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <button
+                          key={rating}
+                          type="button"
+                          onClick={() => setCoffeeMugRating(rating)}
+                          className={`py-3 px-2 rounded-lg border-2 transition-all font-bold ${
+                            coffeeMugRating === rating
+                              ? 'bg-black text-white border-black'
+                              : 'bg-white text-black border-gray-200 hover:border-black'
+                          }`}
+                        >
+                          <div className="text-xl font-bold">{rating}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Price Rating */}
@@ -616,7 +731,7 @@ function AddVisitForm() {
         </div>
 
         {/* Additional Details Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border-2 border-gray-200">
           <h2 className="text-xl font-bold text-black mb-4 flex items-center gap-2">
             <span>📝</span>
             <span>Additional Details</span>
@@ -647,14 +762,25 @@ function AddVisitForm() {
                     ))}
                   </div>
                 )}
-                <input
-                  type="text"
-                  value={itemsInput}
-                  onChange={(e) => setItemsInput(e.target.value)}
-                  onKeyDown={handleItemsKeyDown}
-                  placeholder="Type an item and press Enter (e.g., Flat white)"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={itemsInput}
+                    onChange={(e) => setItemsInput(e.target.value)}
+                    onKeyDown={handleItemsKeyDown}
+                    placeholder="Type an item (e.g., Flat white)"
+                    className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddItem}
+                    disabled={!itemsInput.trim()}
+                    className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 font-bold transition-all disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    <span className="text-xl">+</span>
+                    <span>Add</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -682,14 +808,25 @@ function AddVisitForm() {
                     ))}
                   </div>
                 )}
-                <input
-                  type="text"
-                  value={recommendationsInput}
-                  onChange={(e) => setRecommendationsInput(e.target.value)}
-                  onKeyDown={handleRecommendationsKeyDown}
-                  placeholder="Type a recommendation and press Enter (e.g., Blueberry muffin)"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={recommendationsInput}
+                    onChange={(e) => setRecommendationsInput(e.target.value)}
+                    onKeyDown={handleRecommendationsKeyDown}
+                    placeholder="Type a recommendation (e.g., Blueberry muffin)"
+                    className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddRecommendation}
+                    disabled={!recommendationsInput.trim()}
+                    className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 font-bold transition-all disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    <span className="text-xl">+</span>
+                    <span>Add</span>
+                  </button>
+                </div>
               </div>
             </div>
 

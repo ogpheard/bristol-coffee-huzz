@@ -17,6 +17,7 @@ const fredoka = Fredoka({
 export const metadata: Metadata = {
   title: "The Ultimate Huzz Quest",
   description: "The ultimate café quest across Bristol - Track, rate, and conquer every coffee spot!",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes",
 };
 
 export default function RootLayout({
