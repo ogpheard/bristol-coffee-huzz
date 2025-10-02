@@ -166,12 +166,7 @@ export default function MapPage() {
     filteredCafes.forEach((cafe) => {
       if (!cafe.latitude || !cafe.longitude) return
 
-      // Create wrapper to contain both marker and badge
-      const wrapper = document.createElement('div')
-      wrapper.style.position = 'relative'
-      wrapper.style.width = '36px'
-      wrapper.style.height = '36px'
-
+      // Create main marker element
       const el = document.createElement('div')
       el.className = 'cafe-marker'
       el.style.width = '36px'
@@ -181,12 +176,13 @@ export default function MapPage() {
       el.style.border = '3px solid white'
       el.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)'
       el.style.transition = 'transform 0.2s, box-shadow 0.2s'
+      el.style.position = 'relative'
 
       // Color based on rating
       const color = getColorForRating(cafe.avgRating)
       el.style.backgroundColor = color
 
-      // Add visitor badges
+      // Add visitor badges directly to marker element
       if (cafe.uniqueVisitors.length > 0) {
         const badge = document.createElement('div')
         badge.className = 'visitor-badge'
@@ -205,10 +201,9 @@ export default function MapPage() {
         badge.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)'
         badge.style.fontFamily = 'var(--font-fredoka)'
         badge.style.pointerEvents = 'none'
-        wrapper.appendChild(badge)
+        badge.style.zIndex = '10'
+        el.appendChild(badge)
       }
-
-      wrapper.appendChild(el)
 
       // Create popup with café name and rating
       const popupContent = `
@@ -241,7 +236,11 @@ export default function MapPage() {
         maxWidth: '300px'
       }).setHTML(popupContent)
 
-      const marker = new mapboxgl.Marker(wrapper)
+      // Create marker with proper anchor to prevent positioning issues
+      const marker = new mapboxgl.Marker({
+        element: el,
+        anchor: 'center'
+      })
         .setLngLat([cafe.longitude, cafe.latitude])
         .setPopup(popup)
         .addTo(map.current!)
@@ -354,10 +353,10 @@ export default function MapPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-180px)] flex flex-col">
+    <div className="flex flex-col">
       {/* Header */}
       <div className="mb-4">
-        <h1 className="text-4xl font-bold text-black mb-2">🗺️ Map</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-black mb-2">🗺️ Map</h1>
         <p className="text-gray-600">Explore all {cafes.length} Bristol cafés</p>
       </div>
 
@@ -365,7 +364,7 @@ export default function MapPage() {
       <div className="bg-white rounded-xl shadow-lg p-4 mb-4">
         <div className="grid md:grid-cols-3 gap-4 items-end">
           <div className="md:col-span-2">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-gray-700 mb-2">
               🔍 Search
             </label>
             <input
@@ -373,18 +372,18 @@ export default function MapPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search cafés, areas, postcodes..."
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-gray-700 mb-2">
               📊 Filter
             </label>
             <select
               value={filterVisited}
               onChange={(e) => setFilterVisited(e.target.value as 'all' | 'visited' | 'unvisited')}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all font-semibold"
             >
               <option value="all">All cafés ({cafes.length})</option>
               <option value="visited">Visited ({cafes.filter(c => c.totalVisits > 0).length})</option>
@@ -395,27 +394,31 @@ export default function MapPage() {
 
         {/* Legend */}
         <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-gray-400 border-2 border-white"></div>
-                <span className="text-gray-600">Unvisited</span>
+                <div className="w-5 h-5 rounded-full bg-gray-400 border-2 border-white shadow-sm"></div>
+                <span className="text-gray-700 font-semibold">Unvisited</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-white"></div>
-                <span className="text-gray-600">&lt;2.5</span>
+                <div className="w-5 h-5 rounded-full bg-red-500 border-2 border-white shadow-sm"></div>
+                <span className="text-gray-700 font-semibold">1★</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-orange-500 border-2 border-white"></div>
-                <span className="text-gray-600">2.5-3.5</span>
+                <div className="w-5 h-5 rounded-full bg-orange-500 border-2 border-white shadow-sm"></div>
+                <span className="text-gray-700 font-semibold">2★</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-yellow-500 border-2 border-white"></div>
-                <span className="text-gray-600">3.5-4.5</span>
+                <div className="w-5 h-5 rounded-full bg-yellow-500 border-2 border-white shadow-sm"></div>
+                <span className="text-gray-700 font-semibold">3★</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-white"></div>
-                <span className="text-gray-600">4.5+</span>
+                <div className="w-5 h-5 rounded-full bg-lime-500 border-2 border-white shadow-sm"></div>
+                <span className="text-gray-700 font-semibold">4★</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full bg-green-600 border-2 border-white shadow-sm"></div>
+                <span className="text-gray-700 font-semibold">5★</span>
               </div>
             </div>
             <div className="text-gray-600 font-semibold">
@@ -425,15 +428,15 @@ export default function MapPage() {
         </div>
       </div>
 
-      <div className="flex gap-4 flex-1 overflow-hidden">
-        {/* Map */}
-        <div className="flex-1 relative">
-          <div ref={mapContainer} className="w-full h-full rounded-xl shadow-2xl" />
-        </div>
+      {/* Map Container */}
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-4">
+        <div ref={mapContainer} className="w-full h-[60vh] sm:h-[70vh]" />
+      </div>
 
-        {/* Nearby Cafes Sidebar */}
+      <div className="flex flex-col lg:flex-row gap-4">
+        {/* Nearby Cafes - Below map on mobile, sidebar on desktop */}
         {userLocation && !selectedCafe && nearbyCafes.length > 0 && (
-          <div className="w-96 bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
+          <div className="w-full lg:w-96 bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
             <div className="bg-black p-6">
               <h2 className="text-2xl font-bold text-white mb-2">📍 Nearby Cafés</h2>
               <p className="text-gray-300 text-sm">Closest cafés to your location</p>
@@ -451,7 +454,7 @@ export default function MapPage() {
               </select>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="overflow-y-auto max-h-96 lg:max-h-[500px]">
               {nearbyCafes
                 .filter((cafe) => {
                   if (nearbyFilter === 'visited') return cafe.totalVisits > 0
@@ -504,9 +507,9 @@ export default function MapPage() {
           </div>
         )}
 
-        {/* Selected Cafe Sidebar */}
+        {/* Selected Cafe - Below map on mobile, sidebar on desktop */}
         {selectedCafe && (
-          <div className="w-96 bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
+          <div className="w-full lg:w-96 bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
             {/* Header */}
             <div className="bg-black p-6">
               <div className="flex items-start justify-between">
@@ -532,7 +535,7 @@ export default function MapPage() {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="overflow-y-auto p-6 max-h-96 lg:max-h-[500px]">
               {selectedCafe.totalVisits > 0 ? (
                 <>
                   {/* Overall Rating */}
@@ -616,10 +619,11 @@ export default function MapPage() {
 
 function getColorForRating(rating: number): string {
   if (rating === 0) return '#9ca3af' // Gray for unvisited
-  if (rating < 2.5) return '#ef4444' // Red
-  if (rating < 3.5) return '#f59e0b' // Orange
-  if (rating < 4.5) return '#eab308' // Yellow
-  return '#22c55e' // Green
+  if (rating < 1.5) return '#ef4444' // Red - 1 star
+  if (rating < 2.5) return '#f59e0b' // Orange - 2 stars
+  if (rating < 3.5) return '#eab308' // Yellow - 3 stars
+  if (rating < 4.5) return '#84cc16' // Lime - 4 stars
+  return '#16a34a' // Green - 5 stars
 }
 
 function RatingBar({ label, rating }: { label: string; rating: number }) {
