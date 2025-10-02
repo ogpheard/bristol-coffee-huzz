@@ -273,7 +273,7 @@ export default function MapPage() {
     })
   }, [filteredCafes])
 
-  // Add user location marker
+  // Add user location marker and fly to it
   useEffect(() => {
     if (!map.current || !userLocation) return
 
@@ -282,7 +282,7 @@ export default function MapPage() {
       userLocationMarker.current.remove()
     }
 
-    // Create user location marker
+    // Create user location marker with higher z-index
     const el = document.createElement('div')
     el.style.width = '20px'
     el.style.height = '20px'
@@ -291,7 +291,8 @@ export default function MapPage() {
     el.style.border = '3px solid white'
     el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.4), 0 0 0 10px rgba(59, 130, 246, 0.2)'
     el.style.cursor = 'pointer'
-    el.style.zIndex = '999'
+    el.style.position = 'relative'
+    el.style.zIndex = '9999'
 
     const popup = new mapboxgl.Popup({
       offset: 15,
@@ -309,6 +310,13 @@ export default function MapPage() {
       .setLngLat([userLocation.lng, userLocation.lat])
       .setPopup(popup)
       .addTo(map.current)
+
+    // Fly to user location when first loaded
+    map.current.flyTo({
+      center: [userLocation.lng, userLocation.lat],
+      zoom: 14,
+      duration: 1500,
+    })
 
     el.addEventListener('mouseenter', () => {
       popup.addTo(map.current!)

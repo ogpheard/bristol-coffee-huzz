@@ -76,7 +76,7 @@ export async function GET() {
     // Area breakdown
     const areaBreakdown = allCafes.reduce(
       (acc, cafe) => {
-        const area = cafe.area || 'Unknown'
+        const area = cafe.area || 'Miscellaneous'
         if (!acc[area]) {
           acc[area] = { total: 0, visited: 0 }
         }

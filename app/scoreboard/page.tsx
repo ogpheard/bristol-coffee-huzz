@@ -112,8 +112,8 @@ export default function ScoreboardPage() {
           </div>
         </div>
         <div className="flex justify-between text-sm text-gray-600 mt-3">
-          <span>0 cafés</span>
-          <span>{stats.overview.totalCafes} cafés</span>
+          <span className="font-semibold text-green-600">{stats.overview.totalVisited} cafés visited</span>
+          <span className="font-semibold">{stats.overview.totalCafes} cafés total</span>
         </div>
       </div>
 
